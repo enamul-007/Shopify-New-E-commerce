@@ -1,0 +1,337 @@
+{% comment %}
+  Template: templates/cart.liquid
+  Beautiful Cart Page — matches dark theme
+{% endcomment %}
+
+{{ 'index.css' | asset_url | stylesheet_tag }}
+
+<div class="cart-page">
+  <div class="cart-page-container">
+
+    {% if cart.item_count > 0 %}
+
+      <!-- Header -->
+      <div class="cart-page-header">
+        <div>
+          <p class="cart-page-eyebrow">Review Your Order</p>
+          <h1 class="cart-page-title">Shopping Cart</h1>
+        </div>
+        <span class="cart-page-item-count">{{ cart.item_count }} item{% if cart.item_count != 1 %}s{% endif %}</span>
+      </div>
+
+      <form action="/cart" method="post" novalidate id="cart-page-form">
+        <div class="cart-page-layout">
+
+          <!-- LEFT: Items -->
+          <div class="cart-page-items">
+
+            {% for item in cart.items %}
+              <div class="cart-page-item" style="--i: {{ forloop.index }}">
+
+                <!-- Image -->
+                <div class="cart-page-item-img-wrap">
+                  <a href="{{ item.url }}">
+                    {% if item.image != blank %}
+                      <img
+                        src="{{ item.image | img_url: '240x240', crop: 'center' }}"
+                        alt="{{ item.image.alt | default: item.title | escape }}"
+                        class="cart-page-item-img"
+                        width="96"
+                        height="96"
+                        loading="lazy"
+                      >
+                    {% else %}
+                      <div class="cart-page-item-no-img">
+                        <span class="material-symbols-outlined">image_not_supported</span>
+                      </div>
+                    {% endif %}
+                  </a>
+                </div>
+
+                <!-- Info -->
+                <div class="cart-page-item-info">
+                  <div class="cart-page-item-top">
+                    <div class="cart-page-item-meta">
+                      <h3 class="cart-page-item-title">
+                        <a href="{{ item.url }}">{{ item.product.title }}</a>
+                      </h3>
+                      {% unless item.product.has_only_default_variant %}
+                        <p class="cart-page-item-variant">{{ item.variant.title }}</p>
+                      {% endunless %}
+                      {% if item.vendor != blank %}
+                        <p class="cart-page-item-vendor">{{ item.vendor }}</p>
+                      {% endif %}
+
+                      {%- assign property_size = item.properties | size -%}
+                      {% if property_size > 0 %}
+                        <div class="cart-page-item-props">
+                          {% for p in item.properties %}
+                            {% unless p.last == blank %}
+                              <span class="cart-page-item-prop">
+                                <strong>{{ p.first }}:</strong>
+                                {% if p.last contains '/uploads/' %}
+                                  <a href="{{ p.last }}" target="_blank">{{ p.last | split: '/' | last }}</a>
+                                {% else %}
+                                  {{ p.last }}
+                                {% endif %}
+                              </span>
+                            {% endunless %}
+                          {% endfor %}
+                        </div>
+                      {% endif %}
+                    </div>
+
+                    <!-- Price (desktop) -->
+                    <div class="cart-page-item-price-col">
+                      {% if item.original_line_price != item.line_price %}
+                        <span class="cart-page-item-price sale">{{ item.price | money }}</span>
+                        <s class="cart-page-item-compare">{{ item.original_price | money }}</s>
+                      {% else %}
+                        <span class="cart-page-item-price">{{ item.price | money }}</span>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <!-- Bottom Row: qty + line total + remove -->
+                  <div class="cart-page-item-bottom">
+                    <!-- Qty -->
+                    <div class="cart-page-qty-wrap">
+                      <button type="button" class="cart-page-qty-btn" data-action="minus" data-key="{{ item.key }}">
+                        <span class="material-symbols-outlined">remove</span>
+                      </button>
+                      <input
+                        type="number"
+                        name="updates[]"
+                        id="updates_{{ item.key }}"
+                        class="cart-page-qty-input"
+                        value="{{ item.quantity }}"
+                        min="0"
+                        data-key="{{ item.key }}"
+                        aria-label="Quantity for {{ item.title }}"
+                      >
+                      <button type="button" class="cart-page-qty-btn" data-action="plus" data-key="{{ item.key }}">
+                        <span class="material-symbols-outlined">add</span>
+                      </button>
+                    </div>
+
+                    <!-- Line Total -->
+                    <span class="cart-page-line-total" id="line-total-{{ item.key }}">
+                      {{ item.line_price | money }}
+                    </span>
+
+                    <!-- Remove -->
+                    <button
+                      type="button"
+                      class="cart-page-remove-btn"
+                      data-key="{{ item.key }}"
+                      aria-label="Remove {{ item.title }}"
+                    >
+                      <span class="material-symbols-outlined">delete_outline</span>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            {% endfor %}
+
+            <!-- Cart Note -->
+            {% if settings.cart_notes_enable %}
+              <div class="cart-page-note-wrap">
+                <label for="CartSpecialInstructions" class="cart-page-note-label">
+                  <span class="material-symbols-outlined">edit_note</span>
+                  Order Notes (optional)
+                </label>
+                <textarea
+                  name="note"
+                  id="CartSpecialInstructions"
+                  class="cart-page-note-textarea"
+                  placeholder="Any special instructions for your order..."
+                  rows="3"
+                >{{ cart.note }}</textarea>
+              </div>
+            {% endif %}
+
+            <!-- Continue Shopping -->
+            <a href="{{ routes.collections_url }}" class="cart-page-continue-link">
+              <span class="material-symbols-outlined">arrow_back</span>
+              Continue Shopping
+            </a>
+
+          </div>
+
+          <!-- RIGHT: Order Summary -->
+          <div class="cart-page-summary">
+            <div class="cart-page-summary-box">
+              <h2 class="cart-page-summary-title">Order Summary</h2>
+
+              <!-- Promo Code -->
+              <div class="cart-page-promo-wrap">
+                <label class="cart-page-promo-label">Discount Code</label>
+                <div class="cart-page-promo-row">
+                  <input
+                    type="text"
+                    id="cart-page-promo-input"
+                    class="cart-page-promo-input"
+                    placeholder="Enter promo code"
+                    autocomplete="off"
+                  >
+                  <button type="button" id="cart-page-promo-btn" class="cart-page-promo-btn">Apply</button>
+                </div>
+              </div>
+
+              <!-- Totals -->
+              <div class="cart-page-totals">
+                <div class="cart-page-total-row">
+                  <span class="cart-page-total-label">Subtotal</span>
+                  <span class="cart-page-total-value" id="cart-page-subtotal">{{ cart.total_price | money }}</span>
+                </div>
+                {% if cart.total_discounts > 0 %}
+                  <div class="cart-page-total-row discount">
+                    <span class="cart-page-total-label">
+                      <span class="material-symbols-outlined">local_offer</span>
+                      Savings
+                    </span>
+                    <span class="cart-page-total-value green">–{{ cart.total_discounts | money }}</span>
+                  </div>
+                {% endif %}
+                <div class="cart-page-total-row">
+                  <span class="cart-page-total-label">Shipping</span>
+                  <span class="cart-page-total-value muted">Calculated at checkout</span>
+                </div>
+                <div class="cart-page-total-row final">
+                  <span>Total</span>
+                  <span id="cart-page-total">{{ cart.total_price | money }}</span>
+                </div>
+              </div>
+
+              <!-- Checkout Button -->
+              <button type="submit" name="checkout" class="cart-page-checkout-btn">
+                <span class="material-symbols-outlined">lock</span>
+                Proceed to Checkout
+              </button>
+
+              <!-- Update Cart -->
+              <button type="submit" name="update" class="cart-page-update-btn">
+                <span class="material-symbols-outlined">refresh</span>
+                Update Cart
+              </button>
+
+              <!-- Trust Badges -->
+              <div class="cart-page-trust">
+                <div class="cart-page-trust-item">
+                  <span class="material-symbols-outlined">verified_user</span>
+                  <span>Secure Checkout</span>
+                </div>
+                <div class="cart-page-trust-item">
+                  <span class="material-symbols-outlined">local_shipping</span>
+                  <span>Free Shipping</span>
+                </div>
+                <div class="cart-page-trust-item">
+                  <span class="material-symbols-outlined">replay</span>
+                  <span>Easy Returns</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </form>
+
+    {% else %}
+
+      <!-- Empty State -->
+      <div class="cart-page-empty">
+        <div class="cart-page-empty-icon">
+          <span class="material-symbols-outlined">shopping_bag</span>
+        </div>
+        <h1 class="cart-page-empty-title">Your cart is empty</h1>
+        <p class="cart-page-empty-sub">Looks like you haven't added anything yet.</p>
+        <a href="{{ routes.collections_url }}" class="cart-page-empty-btn">
+          <span class="material-symbols-outlined">storefront</span>
+          Start Shopping
+        </a>
+
+        <div class="supports-no-cookies" style="display:none;">
+          <p class="cart-page-cookies-msg">Please enable cookies to use the cart.</p>
+        </div>
+      </div>
+
+    {% endif %}
+
+  </div>
+</div>
+
+<script>
+(function() {
+
+  // =============================================
+  // AJAX QTY BUTTONS
+  // =============================================
+  document.querySelectorAll('.cart-page-qty-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var key    = this.dataset.key;
+      var action = this.dataset.action;
+      var input  = document.querySelector('.cart-page-qty-input[data-key="' + key + '"]');
+      if (!input) return;
+
+      var current = parseInt(input.value, 10) || 0;
+      var newQty  = action === 'plus' ? current + 1 : Math.max(0, current - 1);
+      input.value = newQty;
+      updateItem(key, newQty);
+    });
+  });
+
+  // =============================================
+  // AJAX REMOVE BUTTONS
+  // =============================================
+  document.querySelectorAll('.cart-page-remove-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var key = this.dataset.key;
+      updateItem(key, 0);
+    });
+  });
+
+  // =============================================
+  // AJAX UPDATE
+  // =============================================
+  function updateItem(key, qty) {
+    fetch('/cart/change.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: key, quantity: qty })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(cart) {
+      // Reload page to reflect server-side totals accurately
+      window.location.reload();
+    });
+  }
+
+  // =============================================
+  // PROMO CODE
+  // =============================================
+  var promoBtn = document.getElementById('cart-page-promo-btn');
+  if (promoBtn) {
+    promoBtn.addEventListener('click', function() {
+      var code = document.getElementById('cart-page-promo-input').value.trim();
+      if (!code) return;
+      window.location.href = '/discount/' + encodeURIComponent(code) + '?redirect=/cart';
+    });
+  }
+
+  // =============================================
+  // PROMO INPUT — Enter key support
+  // =============================================
+  var promoInput = document.getElementById('cart-page-promo-input');
+  if (promoInput) {
+    promoInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('cart-page-promo-btn').click();
+      }
+    });
+  }
+
+})();
+</script>

@@ -1,0 +1,162 @@
+{{ 'index.css' | asset_url | stylesheet_tag }}
+
+<header class="site-header" id="site-header">
+  <div class="header-inner">
+
+    <!-- Logo + Shop Name -->
+    <div class="header-logo" style="display: flex; align-items: center; gap: 10px;">
+      <a href="{{ routes.root_url }}" class="logo-link" style="display: flex; align-items: center; gap: 10px;">
+        {% if section.settings.logo_image != blank %}
+          <img
+            src="{{ section.settings.logo_image | image_url }}"
+            alt="{{ section.settings.shop_name | default: shop.name }}"
+            class="logo-img"
+            width="{{ section.settings.logo_width }}"
+            height="{{ section.settings.logo_width }}"
+            style="width: {{ section.settings.logo_width }}px; height: auto;"
+          >
+        {% endif %}
+        <span class="logo-text" style="font-size: {{ section.settings.shop_name_size }}px; font-weight: bold;">
+          {{ section.settings.shop_name | default: shop.name }}
+        </span>
+      </a>
+    </div>
+
+    <!-- Nav -->
+    <nav class="header-nav" id="header-nav">
+      {% for link in linklists[section.settings.menu].links %}
+        <a href="{{ link.url }}" class="nav-link {% if link.active %}active{% endif %}">{{ link.title }}</a>
+      {% endfor %}
+    </nav>
+
+    <!-- Actions -->
+    <div class="header-actions">
+      <button class="icon-btn" id="search-toggle" aria-label="Search">
+        <span class="material-symbols-outlined">search</span>
+      </button>
+      <a href="{{ routes.cart_url }}" class="icon-btn cart-btn" aria-label="Cart">
+        <span class="material-symbols-outlined">shopping_cart</span>
+        {% if cart.item_count > 0 %}
+          <span class="cart-dot"></span>
+        {% endif %}
+      </a>
+      <a href="{{ routes.account_url }}" class="icon-btn" aria-label="Account">
+        <span class="material-symbols-outlined">person</span>
+      </a>
+      <button class="icon-btn mobile-menu-btn" id="mobile-menu-toggle" aria-label="Menu">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Mobile Nav -->
+  <div class="mobile-nav" id="mobile-nav">
+    {% for link in linklists[section.settings.menu].links %}
+      <a href="{{ link.url }}" class="mobile-nav-link">{{ link.title }}</a>
+    {% endfor %}
+  </div>
+
+  <!-- Search Bar -->
+  <div class="header-search-bar" id="header-search-bar">
+    <form action="{{ routes.search_url }}" method="get" class="header-search-form" role="search">
+      <input
+        type="search"
+        name="q"
+        id="header-search-input"
+        class="header-search-input"
+        placeholder="Search products..."
+        autocomplete="off"
+        aria-label="Search"
+      >
+      <button type="submit" class="header-search-submit" aria-label="Submit search">
+        <span class="material-symbols-outlined">search</span>
+      </button>
+      <button type="button" class="header-search-close" id="header-search-close" aria-label="Close search">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </form>
+  </div>
+
+</header>
+
+<script>
+  // Mobile menu toggle
+  document.getElementById('mobile-menu-toggle').addEventListener('click', function() {
+    document.getElementById('mobile-nav').classList.toggle('open');
+  });
+
+  // Search toggle
+  var searchToggle = document.getElementById('search-toggle');
+  var searchBar    = document.getElementById('header-search-bar');
+  var searchClose  = document.getElementById('header-search-close');
+  var searchInput  = document.getElementById('header-search-input');
+
+  if (searchToggle) {
+    searchToggle.addEventListener('click', function() {
+      searchBar.classList.toggle('open');
+      if (searchBar.classList.contains('open')) {
+        setTimeout(function() { searchInput.focus(); }, 50);
+      }
+    });
+  }
+
+  if (searchClose) {
+    searchClose.addEventListener('click', function() {
+      searchBar.classList.remove('open');
+      searchInput.value = '';
+    });
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && searchBar.classList.contains('open')) {
+      searchBar.classList.remove('open');
+      searchInput.value = '';
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Header",
+  "tag": "header",
+  "class": "site-header-section",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "logo_image",
+      "label": "Logo Image"
+    },
+    {
+      "type": "range",
+      "id": "logo_width",
+      "label": "Logo Width (px)",
+      "min": 50,
+      "max": 400,
+      "step": 5,
+      "default": 150
+    },
+    {
+      "type": "text",
+      "id": "shop_name",
+      "label": "Shop Name",
+      "default": "MyShop"
+    },
+    {
+      "type": "range",
+      "id": "shop_name_size",
+      "label": "Shop Name Font Size (px)",
+      "min": 12,
+      "max": 36,
+      "step": 1,
+      "default": 18
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Navigation Menu",
+      "default": "main-menu"
+    }
+  ]
+}
+{% endschema %}

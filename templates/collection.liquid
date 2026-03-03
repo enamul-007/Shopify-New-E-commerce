@@ -1,0 +1,461 @@
+{% comment %}
+  Template: templates/collection.liquid
+  Shopify Collection Page — Shop All Products
+  Filtering: Tag-based + Price URL params + Sort
+{% endcomment %}
+
+{% comment %} — Active tag & price filters from URL — {% endcomment %}
+{% assign active_tags = current_tags %}
+{% assign url_sort    = collection.sort_by | default: collection.default_sort_by %}
+{% assign price_min   = request.params['filter.v.price.gte'] | default: '0' %}
+{% assign price_max   = request.params['filter.v.price.lte'] | default: '100000' %}
+
+{% paginate collection.products by 12 %}
+
+<main class="collection-page">
+  <div class="container">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ol class="breadcrumb-list">
+        <li><a href="{{ routes.root_url }}">Home</a></li>
+        <li>
+          <span class="material-symbols-outlined">chevron_right</span>
+          <span class="breadcrumb-current">{{ collection.title | default: 'Shop' }}</span>
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Page Title -->
+    <div class="collection-title-row">
+      <h1 class="collection-title">{{ collection.title | default: 'All Products' }}</h1>
+    </div>
+
+    <!-- Active Filter Pills -->
+    {% if active_tags.size > 0 or price_min != '0' or price_max != '100000' %}
+      <div class="active-filters-bar">
+        <span class="active-filters-label">Active Filters:</span>
+        {% for tag in active_tags %}
+          <a href="{{ collection.url }}/{{ active_tags | remove: tag | join: '+' }}{% if url_sort != blank %}?sort_by={{ url_sort }}{% endif %}" class="active-filter-pill">
+            {{ tag }}
+            <span class="material-symbols-outlined">close</span>
+          </a>
+        {% endfor %}
+        {% if price_min != '0' or price_max != '100000' %}
+          <a href="{{ collection.url }}" class="active-filter-pill">
+            ${{ price_min }} – ${{ price_max }}
+            <span class="material-symbols-outlined">close</span>
+          </a>
+        {% endif %}
+        <a href="{{ collection.url }}" class="active-filter-clear">Clear All</a>
+      </div>
+    {% endif %}
+
+    <div class="collection-layout">
+
+      <!-- ===================== SIDEBAR ===================== -->
+      <aside class="collection-sidebar" id="collection-sidebar">
+
+        <!-- Search (client-side filter) -->
+        <div class="filter-search-wrap">
+          <input
+            type="text"
+            id="filter-search"
+            class="filter-search-input"
+            placeholder="Search products..."
+            autocomplete="off"
+          >
+          <span class="material-symbols-outlined filter-search-icon">search</span>
+        </div>
+
+        <!-- Categories -->
+        {% if linklists['all-collections'] %}
+          <div class="filter-group">
+            <h3 class="filter-heading">Categories</h3>
+            <ul class="filter-category-list">
+              {% for link in linklists['all-collections'].links %}
+                <li>
+                  <a
+                    href="{{ link.url }}"
+                    class="filter-category-link {% if link.active %}active{% endif %}"
+                  >
+                    {{ link.title }}
+                    {% assign cat_col = collections[link.handle] %}
+                    {% if cat_col %}
+                      <span class="filter-category-count">{{ cat_col.products_count }}</span>
+                    {% endif %}
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        <!-- Price Range -->
+        <div class="filter-group">
+          <h3 class="filter-heading">Price</h3>
+          <div class="filter-price-wrap">
+            <div class="filter-price-inputs">
+              <div class="filter-price-input-group">
+                <span class="filter-price-symbol">$</span>
+                <input
+                  type="number"
+                  id="price-min-input"
+                  class="filter-price-number"
+                  value="{{ price_min }}"
+                  min="0"
+                  placeholder="0"
+                >
+              </div>
+              <span class="filter-price-dash">—</span>
+              <div class="filter-price-input-group">
+                <span class="filter-price-symbol">$</span>
+                <input
+                  type="number"
+                  id="price-max-input"
+                  class="filter-price-number"
+                  value="{% if price_max == '100000' %}{% else %}{{ price_max }}{% endif %}"
+                  min="0"
+                  placeholder="1000+"
+                >
+              </div>
+            </div>
+            <input
+              type="range"
+              id="price-range"
+              class="filter-range"
+              min="0"
+              max="1000"
+              value="{{ price_max | default: 1000 | at_most: 1000 }}"
+              step="10"
+            >
+            <button class="filter-price-apply-btn" id="price-apply-btn">Apply Price</button>
+          </div>
+        </div>
+
+        <!-- Color Filter (tag-based) -->
+        <div class="filter-group">
+          <h3 class="filter-heading">Color</h3>
+          <div class="filter-color-grid">
+            {% assign color_map = 'White:#ffffff|Black:#111111|Blue:#2563eb|Red:#ef4444|Green:#16a34a|Yellow:#facc15|Purple:#9333ea|Pink:#f472b6|Gray:#9ca3af|Orange:#f97316' | split: '|' %}
+            {% for color_pair in color_map %}
+              {% assign parts = color_pair | split: ':' %}
+              {% assign color_name = parts[0] %}
+              {% assign color_hex  = parts[1] %}
+              {% assign color_tag  = color_name | downcase %}
+              {% assign is_active  = false %}
+              {% if active_tags contains color_tag %}{% assign is_active = true %}{% endif %}
+
+              {% if is_active %}
+                {% comment %} Remove this tag on click {% endcomment %}
+                <a
+                  href="{{ collection.url }}/{{ active_tags | remove: color_tag | join: '+' }}{% if url_sort != blank %}?sort_by={{ url_sort }}{% endif %}"
+                  class="color-swatch {% if is_active %}active{% endif %}"
+                  style="background: {{ color_hex }}{% if color_name == 'White' %}; border: 1px solid #666{% endif %};"
+                  title="{{ color_name }}"
+                  aria-label="{{ color_name }}"
+                ></a>
+              {% else %}
+                {% comment %} Add this tag on click {% endcomment %}
+                {% if active_tags.size > 0 %}
+                  <a
+                    href="{{ collection.url }}/{{ active_tags | join: '+' }}+{{ color_tag }}{% if url_sort != blank %}?sort_by={{ url_sort }}{% endif %}"
+                    class="color-swatch"
+                    style="background: {{ color_hex }}{% if color_name == 'White' %}; border: 1px solid #666{% endif %};"
+                    title="{{ color_name }}"
+                    aria-label="{{ color_name }}"
+                  ></a>
+                {% else %}
+                  <a
+                    href="{{ collection.url }}/{{ color_tag }}{% if url_sort != blank %}?sort_by={{ url_sort }}{% endif %}"
+                    class="color-swatch"
+                    style="background: {{ color_hex }}{% if color_name == 'White' %}; border: 1px solid #666{% endif %};"
+                    title="{{ color_name }}"
+                    aria-label="{{ color_name }}"
+                  ></a>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Size Filter (tag-based) -->
+        <div class="filter-group">
+          <h3 class="filter-heading">Size</h3>
+          <div class="filter-size-grid">
+            {% assign sizes = 'XS,S,M,L,XL,XXL' | split: ',' %}
+            {% for size in sizes %}
+              {% assign size_tag   = size | downcase %}
+              {% assign is_active  = false %}
+              {% if active_tags contains size_tag %}{% assign is_active = true %}{% endif %}
+
+              {% if is_active %}
+                <a
+                  href="{{ collection.url }}/{{ active_tags | remove: size_tag | join: '+' }}{% if url_sort != blank %}?sort_by={{ url_sort }}{% endif %}"
+                  class="size-btn active"
+                >{{ size }}</a>
+              {% else %}
+                {% if active_tags.size > 0 %}
+                  <a
+                    href="{{ collection.url }}/{{ active_tags | join: '+' }}+{{ size_tag }}{% if url_sort != blank %}?sort_by={{ url_sort }}{% endif %}"
+                    class="size-btn"
+                  >{{ size }}</a>
+                {% else %}
+                  <a
+                    href="{{ collection.url }}/{{ size_tag }}{% if url_sort != blank %}?sort_by={{ url_sort }}{% endif %}"
+                    class="size-btn"
+                  >{{ size }}</a>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+
+      </aside>
+      <!-- ===================== END SIDEBAR ===================== -->
+
+      <!-- ===================== PRODUCTS ===================== -->
+      <div class="collection-main">
+
+        <!-- Toolbar -->
+        <div class="collection-toolbar">
+          <p class="toolbar-count">
+            Showing
+            <span class="toolbar-count-bold">{{ paginate.current_offset | plus: 1 }}–{{ paginate.current_offset | plus: collection.products.size }}</span>
+            of
+            <span class="toolbar-count-bold">{{ collection.products_count }}</span>
+            products
+          </p>
+          <div class="toolbar-sort-wrap">
+            <label class="toolbar-sort-label" for="sort-by">Sort by:</label>
+            <div class="toolbar-select-wrap">
+              <select id="sort-by" class="toolbar-select">
+                <option value="manual"             {% if url_sort == 'manual' %}selected{% endif %}>Featured</option>
+                <option value="created-descending" {% if url_sort == 'created-descending' %}selected{% endif %}>Newest Arrivals</option>
+                <option value="price-ascending"    {% if url_sort == 'price-ascending' %}selected{% endif %}>Price: Low to High</option>
+                <option value="price-descending"   {% if url_sort == 'price-descending' %}selected{% endif %}>Price: High to Low</option>
+                <option value="best-selling"       {% if url_sort == 'best-selling' %}selected{% endif %}>Best Selling</option>
+                <option value="title-ascending"    {% if url_sort == 'title-ascending' %}selected{% endif %}>A – Z</option>
+                <option value="title-descending"   {% if url_sort == 'title-descending' %}selected{% endif %}>Z – A</option>
+              </select>
+              <span class="material-symbols-outlined toolbar-select-icon">expand_more</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="col-product-grid" id="product-grid">
+          {% for product in collection.products %}
+            <div class="col-product-card" data-title="{{ product.title | downcase }}">
+              <div class="col-product-image-wrap">
+                <a href="{{ product.url }}">
+                  {% if product.featured_image %}
+                    <img
+                      src="{{ product.featured_image | img_url: '500x' }}"
+                      alt="{{ product.featured_image.alt | escape }}"
+                      class="col-product-image"
+                      loading="lazy"
+                    >
+                  {% else %}
+                    <div class="col-product-no-image">
+                      <span class="material-symbols-outlined">image_not_supported</span>
+                    </div>
+                  {% endif %}
+                </a>
+
+                <!-- Add to Cart Button -->
+                {% if product.available %}
+                  <button
+                    class="col-add-cart-btn"
+                    data-variant-id="{{ product.first_available_variant.id }}"
+                    aria-label="Add {{ product.title }} to cart"
+                  >
+                    <span class="material-symbols-outlined">add_shopping_cart</span>
+                  </button>
+                {% endif %}
+
+                <!-- Hover Overlay -->
+                <div class="col-product-hover-overlay"></div>
+
+                <!-- Badge -->
+                {% if product.compare_at_price > product.price %}
+                  {% assign discount = product.compare_at_price | minus: product.price | times: 100 | divided_by: product.compare_at_price %}
+                  <span class="col-product-badge sale">-{{ discount }}%</span>
+                {% elsif product.tags contains 'new' or product.tags contains 'New' %}
+                  <span class="col-product-badge new">New</span>
+                {% endif %}
+
+                {% unless product.available %}
+                  <span class="col-product-badge soldout">Sold Out</span>
+                {% endunless %}
+              </div>
+
+              <div class="col-product-info">
+                <h3 class="col-product-name">
+                  <a href="{{ product.url }}">{{ product.title }}</a>
+                </h3>
+                <div class="col-product-pricing">
+                  <span class="col-product-price">{{ product.price | money }}</span>
+                  {% if product.compare_at_price > product.price %}
+                    <s class="col-product-compare">{{ product.compare_at_price | money }}</s>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% else %}
+            <div class="col-no-products">
+              <span class="material-symbols-outlined">inventory_2</span>
+              <p>No products found.</p>
+              <a href="{{ collection.url }}" class="col-clear-filters-btn">Clear Filters</a>
+            </div>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if paginate.pages > 1 %}
+          <nav class="col-pagination" aria-label="Page navigation">
+            {% if paginate.previous %}
+              <a href="{{ paginate.previous.url }}" class="page-btn">
+                <span class="material-symbols-outlined">arrow_back</span> Previous
+              </a>
+            {% else %}
+              <span class="page-btn disabled">
+                <span class="material-symbols-outlined">arrow_back</span> Previous
+              </span>
+            {% endif %}
+
+            <div class="page-numbers">
+              {% for part in paginate.parts %}
+                {% if part.is_link %}
+                  <a href="{{ part.url }}" class="page-num {% if part.title == paginate.current_page %}active{% endif %}">{{ part.title }}</a>
+                {% else %}
+                  {% if part.title == paginate.current_page %}
+                    <span class="page-num active">{{ part.title }}</span>
+                  {% else %}
+                    <span class="page-num ellipsis">&hellip;</span>
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            </div>
+
+            {% if paginate.next %}
+              <a href="{{ paginate.next.url }}" class="page-btn">
+                Next <span class="material-symbols-outlined">arrow_forward</span>
+              </a>
+            {% else %}
+              <span class="page-btn disabled">
+                Next <span class="material-symbols-outlined">arrow_forward</span>
+              </span>
+            {% endif %}
+          </nav>
+        {% endif %}
+
+      </div>
+      <!-- ===================== END PRODUCTS ===================== -->
+
+    </div>
+  </div>
+</main>
+
+<script>
+(function() {
+
+  // =============================================
+  // SORT — URL এ sort_by parameter append করো
+  // current tags ও preserve করো
+  // =============================================
+  var sortSelect = document.getElementById('sort-by');
+  if (sortSelect) {
+    sortSelect.addEventListener('change', function() {
+      var url    = new URL(window.location.href);
+      url.searchParams.set('sort_by', this.value);
+      window.location.href = url.toString();
+    });
+  }
+
+  // =============================================
+  // PRICE RANGE SLIDER → input sync
+  // =============================================
+  var rangeSlider  = document.getElementById('price-range');
+  var priceMaxInput = document.getElementById('price-max-input');
+  var priceMinInput = document.getElementById('price-min-input');
+
+  if (rangeSlider && priceMaxInput) {
+    rangeSlider.addEventListener('input', function() {
+      priceMaxInput.value = this.value;
+    });
+    priceMaxInput.addEventListener('input', function() {
+      rangeSlider.value = Math.min(this.value, rangeSlider.max);
+    });
+  }
+
+  // =============================================
+  // PRICE APPLY BUTTON
+  // =============================================
+  var priceApplyBtn = document.getElementById('price-apply-btn');
+  if (priceApplyBtn) {
+    priceApplyBtn.addEventListener('click', function() {
+      var minVal = priceMinInput ? (priceMinInput.value || '0') : '0';
+      var maxVal = priceMaxInput ? (priceMaxInput.value || '1000') : '1000';
+
+      var url = new URL(window.location.href);
+      url.searchParams.set('filter.v.price.gte', minVal);
+      url.searchParams.set('filter.v.price.lte', maxVal);
+      window.location.href = url.toString();
+    });
+  }
+
+  // =============================================
+  // CLIENT-SIDE PRODUCT SEARCH (title filter)
+  // =============================================
+  var searchInput = document.getElementById('filter-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      var term  = this.value.toLowerCase().trim();
+      var cards = document.querySelectorAll('.col-product-card[data-title]');
+      cards.forEach(function(card) {
+        var title = card.dataset.title || '';
+        card.style.display = term === '' || title.includes(term) ? '' : 'none';
+      });
+    });
+  }
+
+  // =============================================
+  // ADD TO CART
+  // =============================================
+  document.querySelectorAll('.col-add-cart-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var variantId = this.dataset.variantId;
+      if (!variantId) return;
+
+      var self = this;
+      self.disabled = true;
+      self.innerHTML = '<span class="material-symbols-outlined spin">progress_activity</span>';
+
+      fetch('/cart/add.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: variantId, quantity: 1 })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function() {
+        document.dispatchEvent(new CustomEvent('cart:updated'));
+        self.innerHTML = '<span class="material-symbols-outlined">check</span>';
+        self.classList.add('added');
+        setTimeout(function() {
+          self.innerHTML = '<span class="material-symbols-outlined">add_shopping_cart</span>';
+          self.classList.remove('added');
+          self.disabled = false;
+        }, 1800);
+      })
+      .catch(function() {
+        self.innerHTML = '<span class="material-symbols-outlined">add_shopping_cart</span>';
+        self.disabled = false;
+      });
+    });
+  });
+
+})();
+</script>
+
+{% endpaginate %}

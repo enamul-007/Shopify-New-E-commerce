@@ -1,0 +1,245 @@
+<section class="our-story-section">
+  <div class="container">
+    <div class="our-story-inner">
+
+      <!-- Images Column -->
+      <div class="our-story-images">
+        <div class="story-image-grid">
+          {% if section.settings.image_1 != blank %}
+            <img
+              src="{{ section.settings.image_1 | img_url: '600x' }}"
+              alt="{{ section.settings.image_1_alt | default: 'Our store' }}"
+              class="story-img story-img--top"
+              loading="lazy"
+            >
+          {% else %}
+            <div class="story-img story-img--top story-img-placeholder">
+              <span class="material-symbols-outlined">store</span>
+            </div>
+          {% endif %}
+          {% if section.settings.image_2 != blank %}
+            <img
+              src="{{ section.settings.image_2 | img_url: '600x' }}"
+              alt="{{ section.settings.image_2_alt | default: 'Our team' }}"
+              class="story-img story-img--bottom"
+              loading="lazy"
+            >
+          {% else %}
+            <div class="story-img story-img--bottom story-img-placeholder">
+              <span class="material-symbols-outlined">group</span>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Text Column -->
+      <div class="our-story-content">
+        {% if section.settings.eyebrow != blank %}
+          <span class="story-eyebrow">{{ section.settings.eyebrow }}</span>
+        {% endif %}
+        <h2 class="story-heading">{{ section.settings.heading }}</h2>
+        <p class="story-body">{{ section.settings.body_text }}</p>
+
+        <!-- Stats -->
+        <div class="story-stats">
+          {% for block in section.blocks %}
+            <div class="story-stat" {{ block.shopify_attributes }}>
+              <h5 class="story-stat-number">{{ block.settings.number }}</h5>
+              <p class="story-stat-label">{{ block.settings.label }}</p>
+            </div>
+          {% endfor %}
+        </div>
+
+        {% if section.settings.button_label != blank %}
+          <a href="{{ section.settings.button_url }}" class="btn btn-white">
+            {{ section.settings.button_label }}
+          </a>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+.our-story-section {
+  padding: 4rem 0;
+  background: var(--color-dark-surface);
+  border-top: 1px solid var(--color-dark-border);
+  border-bottom: 1px solid var(--color-dark-border);
+}
+.our-story-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  align-items: center;
+}
+@media (min-width: 1024px) {
+  .our-story-inner {
+    flex-direction: row;
+    gap: 4rem;
+  }
+}
+/* Images */
+.our-story-images {
+  width: 100%;
+  flex-shrink: 0;
+}
+@media (min-width: 1024px) { .our-story-images { width: 45%; } }
+.story-image-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.story-img {
+  width: 100%;
+  height: 16rem;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-dark-border);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  opacity: 0.9;
+}
+.story-img--top { margin-top: -2rem; }
+.story-img--bottom { margin-top: 2rem; }
+.story-img-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-dark-base);
+  color: var(--color-text-secondary);
+  font-size: 2rem;
+}
+/* Content */
+.our-story-content { width: 100%; }
+.story-eyebrow {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: 0.75rem;
+}
+.story-heading {
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 1.25rem;
+  line-height: 1.2;
+}
+.story-body {
+  color: var(--color-text-secondary);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  margin-bottom: 2rem;
+}
+/* Stats */
+.story-stats {
+  display: flex;
+  gap: 2.5rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+.story-stat-number {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+.story-stat-label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin-top: 0.25rem;
+}
+</style>
+
+{% schema %}
+{
+  "name": "Our Story",
+  "tag": "section",
+  "class": "our-story-section-wrapper",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image_1",
+      "label": "Image 1 (Top)"
+    },
+    {
+      "type": "text",
+      "id": "image_1_alt",
+      "label": "Image 1 Alt Text",
+      "default": "Our store"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_2",
+      "label": "Image 2 (Bottom)"
+    },
+    {
+      "type": "text",
+      "id": "image_2_alt",
+      "label": "Image 2 Alt Text",
+      "default": "Our team"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow Text",
+      "default": "Our Story"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Crafting Premium Fashion Since 2010"
+    },
+    {
+      "type": "textarea",
+      "id": "body_text",
+      "label": "Body Text",
+      "default": "At MyShop, we believe that style is a way to say who you are without having to speak. We source the finest materials to create timeless pieces that are both modern and enduring. Our commitment to quality ensures that every stitch tells a story of craftsmanship."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button Label",
+      "default": "Read More About Us"
+    },
+    {
+      "type": "url",
+      "id": "button_url",
+      "label": "Button URL"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "stat",
+      "name": "Stat",
+      "settings": [
+        {
+          "type": "text",
+          "id": "number",
+          "label": "Number",
+          "default": "10k+"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Happy Customers"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Our Story",
+      "blocks": [
+        { "type": "stat", "settings": { "number": "10k+", "label": "Happy Customers" } },
+        { "type": "stat", "settings": { "number": "2.5k+", "label": "Premium Products" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

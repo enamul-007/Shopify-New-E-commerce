@@ -1,0 +1,192 @@
+<section class="instagram-section">
+  <div class="container">
+    <div class="instagram-header">
+      <h2 class="instagram-handle">{{ section.settings.handle | prepend: '@' }}</h2>
+      {% if section.settings.follow_url != blank %}
+        <a href="{{ section.settings.follow_url }}" target="_blank" class="instagram-follow-link">
+          Follow Us
+          <span class="material-symbols-outlined">open_in_new</span>
+        </a>
+      {% endif %}
+    </div>
+
+    <div class="instagram-grid">
+      {% for block in section.blocks %}
+        <a
+          href="{{ block.settings.post_url | default: section.settings.follow_url | default: '#' }}"
+          class="instagram-item"
+          target="_blank"
+          {{ block.shopify_attributes }}
+        >
+          {% if block.settings.image != blank %}
+            <img
+              src="{{ block.settings.image | img_url: '400x400', crop: 'center' }}"
+              alt="{{ block.settings.alt_text | default: 'Instagram post' }}"
+              class="instagram-item-image"
+              loading="lazy"
+            >
+          {% else %}
+            <div class="instagram-item-placeholder">
+              <span class="material-symbols-outlined">photo_camera</span>
+            </div>
+          {% endif %}
+          <div class="instagram-item-overlay">
+            <span class="material-symbols-outlined">favorite</span>
+            {% if block.settings.likes != blank %}
+              <span class="instagram-likes">{{ block.settings.likes }}</span>
+            {% endif %}
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<style>
+.instagram-section {
+  padding: 2rem 0 4rem;
+  background: var(--color-dark-base);
+}
+.instagram-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+.instagram-handle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+.instagram-follow-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--color-primary);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: var(--transition);
+}
+.instagram-follow-link:hover { opacity: 0.75; }
+.instagram-follow-link .material-symbols-outlined { font-size: 1rem; }
+
+/* Grid */
+.instagram-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+@media (min-width: 768px) { .instagram-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1024px) { .instagram-grid { grid-template-columns: repeat(6, 1fr); } }
+
+/* Item */
+.instagram-item {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-dark-border);
+  cursor: pointer;
+  display: block;
+}
+.instagram-item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.8;
+  transition: transform 0.5s ease, opacity 0.3s ease;
+}
+.instagram-item:hover .instagram-item-image { transform: scale(1.1); opacity: 1; }
+.instagram-item-placeholder {
+  width: 100%;
+  height: 100%;
+  background: var(--color-dark-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  font-size: 2rem;
+}
+
+/* Overlay */
+.instagram-item-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  color: #fff;
+}
+.instagram-item:hover .instagram-item-overlay { opacity: 1; }
+.instagram-item-overlay .material-symbols-outlined { font-size: 1.75rem; }
+.instagram-likes { font-size: 0.875rem; font-weight: 600; }
+</style>
+
+{% schema %}
+{
+  "name": "Instagram Feed",
+  "tag": "section",
+  "class": "instagram-section-wrapper",
+  "settings": [
+    {
+      "type": "text",
+      "id": "handle",
+      "label": "Instagram Handle (without @)",
+      "default": "MyShop_Official"
+    },
+    {
+      "type": "url",
+      "id": "follow_url",
+      "label": "Instagram Profile URL"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "post",
+      "name": "Instagram Post",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Post Image"
+        },
+        {
+          "type": "text",
+          "id": "alt_text",
+          "label": "Image Alt Text",
+          "default": "Instagram post"
+        },
+        {
+          "type": "url",
+          "id": "post_url",
+          "label": "Post URL (optional)"
+        },
+        {
+          "type": "text",
+          "id": "likes",
+          "label": "Like Count (e.g. 1.2k)",
+          "default": "1.2k"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Instagram Feed",
+      "blocks": [
+        { "type": "post", "settings": { "likes": "1.2k" } },
+        { "type": "post", "settings": { "likes": "980" } },
+        { "type": "post", "settings": { "likes": "2.1k" } },
+        { "type": "post", "settings": { "likes": "756" } },
+        { "type": "post", "settings": { "likes": "1.8k" } },
+        { "type": "post", "settings": { "likes": "3.4k" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

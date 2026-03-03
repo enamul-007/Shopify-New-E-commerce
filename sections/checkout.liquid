@@ -1,0 +1,372 @@
+{% comment %}
+  Section: sections/checkout.liquid
+  Usage: Shopify custom checkout page
+  CSS: assets/checkout.css
+{% endcomment %}
+
+
+<header class="checkout-header">
+  <div class="checkout-container">
+    <div class="checkout-logo">
+      <span class="material-symbols-outlined checkout-logo-icon">shopping_bag</span>
+      <h2 class="checkout-logo-text">{{ shop.name }}</h2>
+    </div>
+  </div>
+</header>
+
+<main class="checkout-main">
+  <div class="checkout-container">
+    <div class="checkout-grid">
+
+      <!-- LEFT: Form -->
+      <div class="checkout-form-col">
+
+        <!-- Breadcrumb -->
+        <nav class="checkout-breadcrumb" aria-label="Checkout steps">
+          <span class="checkout-breadcrumb-active">Information</span>
+          <span class="material-symbols-outlined checkout-breadcrumb-arrow">chevron_right</span>
+          <span class="checkout-breadcrumb-inactive">Shipping</span>
+          <span class="material-symbols-outlined checkout-breadcrumb-arrow">chevron_right</span>
+          <span class="checkout-breadcrumb-inactive">Payment</span>
+        </nav>
+
+        <form class="checkout-form" action="/checkout" method="post">
+          {% if form.errors %}
+            <div class="checkout-errors">
+              {{ form.errors | default_errors }}
+            </div>
+          {% endif %}
+
+          <!-- Contact Information -->
+          <section class="checkout-section">
+            <div class="checkout-section-header">
+              <h3 class="checkout-section-title">Contact Information</h3>
+              <p class="checkout-section-sub">
+                Already have an account?
+                <a href="{{ routes.account_login_url }}" class="checkout-link">Log in</a>
+              </p>
+            </div>
+            <div class="checkout-fields">
+              <div class="checkout-field checkout-field-full">
+                <label for="checkout-email">Email</label>
+                <input
+                  type="email"
+                  id="checkout-email"
+                  name="checkout[email]"
+                  placeholder="Email"
+                  autocomplete="email"
+                  class="checkout-input"
+                  required
+                >
+              </div>
+              <label class="checkout-checkbox-label">
+                <input
+                  type="checkbox"
+                  name="checkout[buyer_accepts_marketing]"
+                  value="1"
+                  class="checkout-checkbox"
+                >
+                <span>Keep me updated on news and exclusive offers</span>
+              </label>
+            </div>
+          </section>
+
+          <!-- Shipping Address -->
+          <section class="checkout-section">
+            <h3 class="checkout-section-title">Shipping Address</h3>
+            <div class="checkout-fields">
+              <div class="checkout-field">
+                <label for="checkout-first-name">First name</label>
+                <input
+                  type="text"
+                  id="checkout-first-name"
+                  name="checkout[shipping_address][first_name]"
+                  placeholder="First name"
+                  autocomplete="given-name"
+                  class="checkout-input"
+                >
+              </div>
+              <div class="checkout-field">
+                <label for="checkout-last-name">Last name</label>
+                <input
+                  type="text"
+                  id="checkout-last-name"
+                  name="checkout[shipping_address][last_name]"
+                  placeholder="Last name"
+                  autocomplete="family-name"
+                  class="checkout-input"
+                >
+              </div>
+              <div class="checkout-field checkout-field-full">
+                <label for="checkout-address1">Address</label>
+                <input
+                  type="text"
+                  id="checkout-address1"
+                  name="checkout[shipping_address][address1]"
+                  placeholder="Address"
+                  autocomplete="address-line1"
+                  class="checkout-input"
+                >
+              </div>
+              <div class="checkout-field checkout-field-full">
+                <label for="checkout-address2">Apartment, suite, etc. (optional)</label>
+                <input
+                  type="text"
+                  id="checkout-address2"
+                  name="checkout[shipping_address][address2]"
+                  placeholder="Apartment, suite, etc. (optional)"
+                  autocomplete="address-line2"
+                  class="checkout-input"
+                >
+              </div>
+              <div class="checkout-field">
+                <label for="checkout-city">City</label>
+                <input
+                  type="text"
+                  id="checkout-city"
+                  name="checkout[shipping_address][city]"
+                  placeholder="City"
+                  autocomplete="address-level2"
+                  class="checkout-input"
+                >
+              </div>
+              <div class="checkout-field">
+                <label for="checkout-country">Country</label>
+                <select
+                  id="checkout-country"
+                  name="checkout[shipping_address][country]"
+                  class="checkout-input checkout-select"
+                  autocomplete="country"
+                >
+                  {{ country_option_tags }}
+                </select>
+              </div>
+              <div class="checkout-field">
+                <label for="checkout-zip">Postal code</label>
+                <input
+                  type="text"
+                  id="checkout-zip"
+                  name="checkout[shipping_address][zip]"
+                  placeholder="Postal code"
+                  autocomplete="postal-code"
+                  class="checkout-input"
+                >
+              </div>
+              <div class="checkout-field">
+                <label for="checkout-phone">Phone</label>
+                <input
+                  type="tel"
+                  id="checkout-phone"
+                  name="checkout[shipping_address][phone]"
+                  placeholder="Phone"
+                  autocomplete="tel"
+                  class="checkout-input"
+                >
+              </div>
+            </div>
+          </section>
+
+          <!-- Shipping Method -->
+          <section class="checkout-section">
+            <h3 class="checkout-section-title">Shipping Method</h3>
+            <div class="checkout-shipping-options">
+              <label class="checkout-shipping-option">
+                <div class="checkout-shipping-option-left">
+                  <input
+                    type="radio"
+                    name="checkout[shipping_rate][id]"
+                    value="standard"
+                    checked
+                    class="checkout-radio"
+                  >
+                  <span class="checkout-shipping-name">Standard Shipping</span>
+                </div>
+                <span class="checkout-shipping-price">Free</span>
+              </label>
+              <label class="checkout-shipping-option">
+                <div class="checkout-shipping-option-left">
+                  <input
+                    type="radio"
+                    name="checkout[shipping_rate][id]"
+                    value="express"
+                    class="checkout-radio"
+                  >
+                  <span class="checkout-shipping-name">Express Shipping</span>
+                </div>
+                <span class="checkout-shipping-price">$15.00</span>
+              </label>
+            </div>
+          </section>
+
+          <!-- Payment -->
+          <section class="checkout-section">
+            <div class="checkout-payment-header">
+              <h3 class="checkout-section-title">Payment</h3>
+              <div class="checkout-card-badges">
+                <span class="checkout-card-badge">Visa</span>
+                <span class="checkout-card-badge">MC</span>
+                <span class="checkout-card-badge">Amex</span>
+              </div>
+            </div>
+            <div class="checkout-payment-box">
+              <div class="checkout-field checkout-field-full checkout-card-field">
+                <input
+                  type="text"
+                  placeholder="Card number"
+                  class="checkout-input"
+                  autocomplete="cc-number"
+                  inputmode="numeric"
+                >
+                <span class="material-symbols-outlined checkout-lock-icon">lock</span>
+              </div>
+              <div class="checkout-field">
+                <input
+                  type="text"
+                  placeholder="Expiration date (MM/YY)"
+                  class="checkout-input"
+                  autocomplete="cc-exp"
+                >
+              </div>
+              <div class="checkout-field">
+                <input
+                  type="text"
+                  placeholder="CVV"
+                  class="checkout-input"
+                  autocomplete="cc-csc"
+                >
+              </div>
+            </div>
+          </section>
+
+          <!-- Submit -->
+          <div class="checkout-submit-wrap">
+            <button type="submit" class="checkout-submit-btn">
+              Complete Purchase
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- RIGHT: Order Summary -->
+      <div class="checkout-summary-col">
+        <div class="checkout-summary-sticky">
+          <div class="checkout-summary-box">
+            <h3 class="checkout-summary-title">Order Summary</h3>
+
+            <!-- Items -->
+            <div class="checkout-summary-items">
+              {% for item in cart.items %}
+                <div class="checkout-summary-item">
+                  <div class="checkout-summary-img-wrap">
+                    <img
+                      src="{{ item.image | img_url: '160x' }}"
+                      alt="{{ item.image.alt | default: item.title | escape }}"
+                      class="checkout-summary-img"
+                      width="80"
+                      height="80"
+                      loading="lazy"
+                    >
+                    <span class="checkout-summary-qty-badge">{{ item.quantity }}</span>
+                  </div>
+                  <div class="checkout-summary-item-info">
+                    <div>
+                      <h4 class="checkout-summary-item-title">{{ item.product.title }}</h4>
+                      {% unless item.variant.title == 'Default Title' %}
+                        <p class="checkout-summary-item-variant">{{ item.variant.title }}</p>
+                      {% endunless %}
+                    </div>
+                    <span class="checkout-summary-item-price">{{ item.final_line_price | money }}</span>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+
+            <!-- Discount Code -->
+            <div class="checkout-discount-wrap">
+              <input
+                type="text"
+                id="checkout-discount-input"
+                placeholder="Discount code"
+                class="checkout-input checkout-discount-input"
+              >
+              <button type="button" id="checkout-discount-btn" class="checkout-discount-btn">Apply</button>
+            </div>
+
+            <!-- Totals -->
+            <div class="checkout-totals">
+              <div class="checkout-total-row">
+                <span class="checkout-total-label">Subtotal</span>
+                <span class="checkout-total-value">{{ cart.total_price | money }}</span>
+              </div>
+              <div class="checkout-total-row">
+                <span class="checkout-total-label">Shipping</span>
+                <span class="checkout-total-value">Free</span>
+              </div>
+              <div class="checkout-total-row">
+                <span class="checkout-total-label">Taxes</span>
+                <span class="checkout-total-value checkout-taxes">Calculated at next step</span>
+              </div>
+              <div class="checkout-total-row checkout-total-final">
+                <span>Total</span>
+                <span>{{ shop.currency }} {{ cart.total_price | money }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Trust badges -->
+          <div class="checkout-trust-badges">
+            <span class="material-symbols-outlined">verified_user</span>
+            <span class="material-symbols-outlined">local_shipping</span>
+            <span class="material-symbols-outlined">eco</span>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="checkout-footer">
+  <div class="checkout-container">
+    <div class="checkout-footer-inner">
+      <p class="checkout-footer-copy">&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. Secure checkout powered by SSL.</p>
+      <div class="checkout-footer-links">
+        {% if shop.privacy_policy != blank %}
+          <a href="{{ shop.privacy_policy.url }}" class="checkout-footer-link">Privacy Policy</a>
+        {% endif %}
+        {% if shop.refund_policy != blank %}
+          <a href="{{ shop.refund_policy.url }}" class="checkout-footer-link">Refund Policy</a>
+        {% endif %}
+        {% if shop.terms_of_service != blank %}
+          <a href="{{ shop.terms_of_service.url }}" class="checkout-footer-link">Terms of Service</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Discount code redirect
+  var discountBtn = document.getElementById('checkout-discount-btn');
+  if (discountBtn) {
+    discountBtn.addEventListener('click', function() {
+      var code = document.getElementById('checkout-discount-input').value.trim();
+      if (!code) return;
+      window.location.href = '/discount/' + encodeURIComponent(code) + '?redirect=/checkout';
+    });
+  }
+</script>
+
+{% schema %}
+{
+  "name": "Checkout Page",
+  "settings": [],
+  "presets": [
+    {
+      "name": "Checkout Page"
+    }
+  ]
+}
+{% endschema %}

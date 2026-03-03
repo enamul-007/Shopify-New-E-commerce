@@ -1,0 +1,251 @@
+{% comment %}
+Section: sections/recommended-products.liquid
+Usage: Product page এ automatically load হবে
+Shopify এর built-in product recommendations API ব্যবহার করে ৪টি প্রোডাক্ট দেখাবে
+{% endcomment %}
+
+<section class="rec-section" id="rec-section" data-product-id="{{ product.id }}">
+  <div class="container rec-container">
+
+    <div class="rec-header">
+      <h2 class="rec-title">{{ section.settings.title | default: 'You Might Also Like' }}</h2>
+      {% if section.settings.view_all_collection != blank %}
+        <a href="{{ collections[section.settings.view_all_collection].url }}" class="rec-view-all">
+          View All
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </a>
+      {% endif %}
+    </div>
+
+    <div class="rec-grid" id="rec-grid">
+
+      {% comment %} 
+        Fallback content: লিকুইড দিয়ে সর্বোচ্চ ৪টি প্রোডাক্ট দেখাবে যদি JS লোড হতে দেরি হয়
+      {% endcomment %}
+      {% assign recommended_count = 0 %}
+      {% for col in product.collections %}
+        {% for rp in col.products %}
+          {% unless rp.id == product.id or recommended_count >= 4 %}
+            <div class="rec-card">
+              <div class="rec-image-wrap">
+                <a href="{{ rp.url }}">
+                  {% if rp.featured_image %}
+                    <img 
+                      src="{{ rp.featured_image | img_url: '300x300', crop: 'center' }}" 
+                      alt="{{ rp.featured_image.alt | escape }}"
+                      width="300" 
+                      height="300"
+                      loading="lazy"
+                      class="rec-image">
+                  {% else %}
+                    <div class="rec-no-image">
+                      <span class="material-symbols-outlined">image_not_supported</span>
+                    </div>
+                  {% endif %}
+                </a>
+
+                <button class="rec-cart-btn" 
+                  data-variant-id="{{ rp.first_available_variant.id }}"
+                  aria-label="Add {{ rp.title | escape }} to cart"
+                  {% unless rp.available %}disabled{% endunless %}>
+                  <span class="material-symbols-outlined">add_shopping_cart</span>
+                </button>
+
+                {% if rp.compare_at_price > rp.price %}
+                  {% assign disc = rp.compare_at_price | minus: rp.price | times: 100 | divided_by: rp.compare_at_price | round %}
+                  <span class="rec-badge sale">-{{ disc }}%</span>
+                {% elsif rp.tags contains 'new' or rp.tags contains 'New' %}
+                  <span class="rec-badge new">New</span>
+                {% endif %}
+
+                {% unless rp.available %}
+                  <div class="rec-sold-out-overlay">Sold Out</div>
+                {% endunless %}
+              </div>
+
+              <div class="rec-info">
+                <h3 class="rec-name">
+                  <a href="{{ rp.url }}">{{ rp.title }}</a>
+                </h3>
+                <div class="rec-pricing">
+                  <span class="rec-price">{{ rp.price | money }}</span>
+                  {% if rp.compare_at_price > rp.price %}
+                    <s class="rec-compare">{{ rp.compare_at_price | money }}</s>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% assign recommended_count = recommended_count | plus: 1 %}
+          {% endunless %}
+        {% endfor %}
+      {% endfor %}
+
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  const section = document.getElementById('rec-section');
+  const grid = document.getElementById('rec-grid');
+  const productId = section?.dataset?.productId;
+
+  if (!productId || !grid) {
+    bindCartButtons();
+    return;
+  }
+
+  // Shopify Recommendations API কল
+  // এখানে limit=4 ব্যবহার করা হয়েছে ৪টি প্রোডাক্টের জন্য
+  fetch(`${window.Shopify.routes.root}recommendations/products.json?product_id=${productId}&limit=4&intent=related`)
+    .then(r => r.json())
+    .then(data => {
+      const products = data.products || [];
+      if (products.length === 0) {
+        bindCartButtons();
+        return;
+      }
+
+      let html = '';
+      // সর্বোচ্চ ৪টি প্রোডাক্ট রেন্ডার করা নিশ্চিত করা
+      const sliceProducts = products.slice(0, 4);
+
+      sliceProducts.forEach(p => {
+        let imgSrc = 'https://cdn.shopify.com/s/images/themes/product-1.png'; // Placeholder
+        let imgAlt = p.title ? escapeHtml(p.title) : '';
+
+        if (p.featured_image) {
+          // ইমেজের সাইজ ৩শ বাই ৩শ ক্রপ করে নেওয়া হচ্ছে
+          imgSrc = p.featured_image;
+          if (imgSrc.includes('.jpg')) imgSrc = imgSrc.replace('.jpg', '_300x300_crop_center.jpg');
+          else if (imgSrc.includes('.png')) imgSrc = imgSrc.replace('.png', '_300x300_crop_center.png');
+          else if (imgSrc.includes('.webp')) imgSrc = imgSrc.replace('.webp', '_300x300_crop_center.webp');
+        }
+
+        const price = formatMoney(p.price);
+        const compare = p.compare_at_price;
+        let compareHtml = '';
+        let badge = '';
+
+        if (compare > p.price) {
+          const disc = Math.round(((compare - p.price) / compare) * 100);
+          badge = `<span class="rec-badge sale">-${disc}%</span>`;
+          compareHtml = `<s class="rec-compare">${formatMoney(compare)}</s>`;
+        } else if (p.tags?.includes('new') || p.tags?.includes('New')) {
+          badge = `<span class="rec-badge new">New</span>`;
+        }
+
+        const available = p.available;
+        const firstVariantId = p.variants && p.variants[0] ? p.variants[0].id : '';
+
+        html += `
+          <div class="rec-card">
+            <div class="rec-image-wrap">
+              <a href="${p.url}">
+                <img src="${imgSrc}" 
+                     alt="${imgAlt}" 
+                     class="rec-image" 
+                     width="300" 
+                     height="300" 
+                     loading="lazy">
+              </a>
+              ${badge}
+              <button class="rec-cart-btn" 
+                      data-variant-id="${firstVariantId}"
+                      ${!available ? ' disabled' : ''}>
+                <span class="material-symbols-outlined">add_shopping_cart</span>
+              </button>
+              ${!available ? '<div class="rec-sold-out-overlay">Sold Out</div>' : ''}
+            </div>
+            <div class="rec-info">
+              <h3 class="rec-name"><a href="${p.url}">${escapeHtml(p.title)}</a></h3>
+              <div class="rec-pricing">
+                <span class="rec-price">${price}</span>
+                ${compareHtml}
+              </div>
+            </div>
+          </div>`;
+      });
+
+      grid.innerHTML = html;
+      bindCartButtons();
+    })
+    .catch(() => {
+      bindCartButtons();
+    });
+
+  function bindCartButtons() {
+    document.querySelectorAll('.rec-cart-btn').forEach(btn => {
+      // ডুপ্লিকেট ইভেন্ট লিসেনার এড়াতে নতুন করে সেট করা
+      btn.replaceWith(btn.cloneNode(true));
+    });
+    
+    document.querySelectorAll('.rec-cart-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const vid = this.dataset.variantId;
+        if (!vid) return;
+
+        const self = this;
+        const originalContent = self.innerHTML;
+        self.innerHTML = '<span class="material-symbols-outlined">hourglass_top</span>';
+        self.disabled = true;
+
+        fetch(window.Shopify.routes.root + 'cart/add.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: vid, quantity: 1 })
+        })
+          .then(r => r.json())
+          .then(() => {
+            // আপনার ড্রয়ার কার্ট বা মিনি কার্ট আপডেট করার ইভেন্ট
+            document.dispatchEvent(new CustomEvent('cart:updated'));
+            self.innerHTML = '<span class="material-symbols-outlined">check</span>';
+            setTimeout(() => {
+              self.innerHTML = originalContent;
+              self.disabled = false;
+            }, 1800);
+          })
+          .catch(() => {
+            self.innerHTML = originalContent;
+            self.disabled = false;
+          });
+      });
+    });
+  }
+
+  function formatMoney(cents) {
+    if (!cents && cents !== 0) return '$0.00';
+    return '$' + (cents / 100).toFixed(2);
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Recommended Products",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Section Title",
+      "default": "You Might Also Like"
+    },
+    {
+      "type": "collection",
+      "id": "view_all_collection",
+      "label": "View All — Link to Collection"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Recommended Products"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,163 @@
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+
+      <!-- Brand Column -->
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <span class="material-symbols-outlined">shopping_bag</span>
+          <span>{{ section.settings.shop_name | default: shop.name }}</span>
+        </div>
+        <p class="footer-brand-desc">{{ section.settings.brand_description }}</p>
+        <div class="footer-social">
+          {% if section.settings.social_instagram != blank %}
+            <a href="{{ section.settings.social_instagram }}" class="social-link" target="_blank" aria-label="Instagram">
+              <span class="material-symbols-outlined">alternate_email</span>
+            </a>
+          {% endif %}
+          {% if section.settings.social_twitter != blank %}
+            <a href="{{ section.settings.social_twitter }}" class="social-link" target="_blank" aria-label="Twitter">
+              <span class="material-symbols-outlined">public</span>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Shop Links -->
+      <div class="footer-links-col">
+        <h3 class="footer-col-heading">{{ section.settings.col2_heading }}</h3>
+        <ul class="footer-links">
+          {% for link in linklists[section.settings.shop_menu].links %}
+            <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Help Links -->
+      <div class="footer-links-col">
+        <h3 class="footer-col-heading">{{ section.settings.col3_heading }}</h3>
+        <ul class="footer-links">
+          {% for link in linklists[section.settings.help_menu].links %}
+            <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Contact -->
+      <div class="footer-links-col">
+        <h3 class="footer-col-heading">Contact Us</h3>
+        <ul class="footer-contact-list">
+          {% if section.settings.address != blank %}
+            <li>
+              <span class="material-symbols-outlined">location_on</span>
+              <span>{{ section.settings.address }}</span>
+            </li>
+          {% endif %}
+          {% if section.settings.phone != blank %}
+            <li>
+              <span class="material-symbols-outlined">call</span>
+              <a href="tel:{{ section.settings.phone }}">{{ section.settings.phone }}</a>
+            </li>
+          {% endif %}
+          {% if section.settings.email != blank %}
+            <li>
+              <span class="material-symbols-outlined">mail</span>
+              <a href="mailto:{{ section.settings.email }}">{{ section.settings.email }}</a>
+            </li>
+          {% endif %}
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Footer Bottom -->
+    <div class="footer-bottom">
+      <p class="footer-copyright">{{ section.settings.copyright_text | default: '© 2024 MyShop. All rights reserved.' }}</p>
+      <div class="footer-payments">
+        <span class="payment-badge">VISA</span>
+        <span class="payment-badge">MC</span>
+        <span class="payment-badge">AMEX</span>
+        <span class="payment-badge">PAYPAL</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "tag": "footer",
+  "class": "site-footer-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "shop_name",
+      "label": "Shop Name",
+      "default": "MyShop"
+    },
+    {
+      "type": "textarea",
+      "id": "brand_description",
+      "label": "Brand Description",
+      "default": "Premium fashion destination for those who value quality and style."
+    },
+    {
+      "type": "url",
+      "id": "social_instagram",
+      "label": "Instagram URL"
+    },
+    {
+      "type": "url",
+      "id": "social_twitter",
+      "label": "Twitter URL"
+    },
+    {
+      "type": "text",
+      "id": "col2_heading",
+      "label": "Column 2 Heading",
+      "default": "Shop Links"
+    },
+    {
+      "type": "link_list",
+      "id": "shop_menu",
+      "label": "Shop Menu",
+      "default": "footer"
+    },
+    {
+      "type": "text",
+      "id": "col3_heading",
+      "label": "Column 3 Heading",
+      "default": "Help & Support"
+    },
+    {
+      "type": "link_list",
+      "id": "help_menu",
+      "label": "Help Menu"
+    },
+    {
+      "type": "text",
+      "id": "address",
+      "label": "Address",
+      "default": "123 Fashion Ave, New York, NY 10001"
+    },
+    {
+      "type": "text",
+      "id": "phone",
+      "label": "Phone",
+      "default": "+1 (555) 123-4567"
+    },
+    {
+      "type": "text",
+      "id": "email",
+      "label": "Email",
+      "default": "support@myshop.com"
+    },
+    {
+      "type": "text",
+      "id": "copyright_text",
+      "label": "Copyright Text",
+      "default": "© 2024 MyShop Inc. All rights reserved."
+    }
+  ]
+}
+{% endschema %}

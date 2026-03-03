@@ -1,0 +1,88 @@
+<section class="hero-section" style="background-image: url('{{ section.settings.background_image | img_url: 'master' }}')">
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    {% if section.settings.badge_text != blank %}
+      <span class="hero-badge">{{ section.settings.badge_text }}</span>
+    {% endif %}
+    <h1 class="hero-title">
+      {{ section.settings.heading_line1 }}
+      <br><span class="hero-title-accent">{{ section.settings.heading_line2 }}</span>
+    </h1>
+    <p class="hero-subtitle">{{ section.settings.subheading }}</p>
+    <div class="hero-buttons">
+      <a href="{{ section.settings.primary_button_url }}" class="btn btn-primary">
+        {{ section.settings.primary_button_label }}
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </a>
+      <a href="{{ section.settings.secondary_button_url }}" class="btn btn-outline">
+        {{ section.settings.secondary_button_label }}
+      </a>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Hero Banner",
+  "tag": "section",
+  "class": "hero-section-wrapper",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background Image"
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "Badge Text",
+      "default": "New Season"
+    },
+    {
+      "type": "text",
+      "id": "heading_line1",
+      "label": "Heading Line 1",
+      "default": "Discover Your"
+    },
+    {
+      "type": "text",
+      "id": "heading_line2",
+      "label": "Heading Line 2 (Accent)",
+      "default": "Unique Style"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Premium fashion for the modern lifestyle."
+    },
+    {
+      "type": "text",
+      "id": "primary_button_label",
+      "label": "Primary Button Text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "primary_button_url",
+      "label": "Primary Button URL"
+    },
+    {
+      "type": "text",
+      "id": "secondary_button_label",
+      "label": "Secondary Button Text",
+      "default": "Explore Collection"
+    },
+    {
+      "type": "url",
+      "id": "secondary_button_url",
+      "label": "Secondary Button URL"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero Banner"
+    }
+  ]
+}
+{% endschema %}

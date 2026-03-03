@@ -1,0 +1,215 @@
+{% comment %}
+  Snippet: snippets/cart-drawer-js.liquid
+  Usage: {% render 'cart-drawer-js' %}
+  theme.liquid এ body এর একদম শেষে রাখো, cart-drawer এর পরে
+{% endcomment %}
+
+<script>
+(function() {
+
+  // =============================================
+  // CART DRAWER CONTROLLER
+  // =============================================
+  var drawer   = document.getElementById('cart-drawer');
+  var overlay  = document.getElementById('cart-overlay');
+  var closeBtn = document.getElementById('cart-drawer-close');
+
+  function openCartDrawer() {
+    if (!drawer) return;
+    drawer.removeAttribute('hidden');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function() {
+      drawer.classList.add('open');
+      if (overlay) overlay.classList.add('open');
+    }, 10);
+  }
+
+  function closeCartDrawer() {
+    if (!drawer) return;
+    drawer.classList.remove('open');
+    if (overlay) overlay.classList.remove('open');
+    document.body.style.overflow = '';
+    setTimeout(function() { drawer.setAttribute('hidden', ''); }, 350);
+  }
+
+  window.CartDrawer = {
+    open: openCartDrawer,
+    close: closeCartDrawer,
+    refresh: refreshCart
+  };
+
+  var cartBtns = document.querySelectorAll('.cart-btn, [data-cart-toggle]');
+  cartBtns.forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      openCartDrawer();
+    });
+  });
+
+  if (closeBtn) closeBtn.addEventListener('click', closeCartDrawer);
+  if (overlay)  overlay.addEventListener('click', closeCartDrawer);
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeCartDrawer();
+  });
+
+  document.addEventListener('cart:updated', function() {
+    refreshCart();
+    openCartDrawer();
+  });
+
+  // =============================================
+  // REFRESH & UPDATE UI
+  // =============================================
+  function refreshCart() {
+    fetch('/cart.js')
+      .then(function(r) { return r.json(); })
+      .then(function(cart) {
+        updateCartUI(cart);
+      });
+  }
+
+  function updateCartUI(cart) {
+    var dots   = document.querySelectorAll('.cart-dot');
+    var counts = document.querySelectorAll('.cart-count');
+    dots.forEach(function(d) { d.style.display = cart.item_count > 0 ? 'flex' : 'none'; });
+    counts.forEach(function(c) { c.textContent = cart.item_count; });
+
+    var drawerCount = document.getElementById('cart-drawer-count');
+    if (drawerCount) drawerCount.textContent = cart.item_count + ' item' + (cart.item_count !== 1 ? 's' : '');
+
+    var subtotal = document.getElementById('cart-subtotal');
+    if (subtotal) subtotal.textContent = formatMoney(cart.total_price);
+
+    var footer = document.getElementById('cart-drawer-footer');
+    if (footer) footer.style.display = cart.item_count > 0 ? '' : 'none';
+
+    renderCartItems(cart.items);
+  }
+
+  function renderCartItems(items) {
+    var container = document.getElementById('cart-drawer-items');
+    if (!container) return;
+
+    if (!items || items.length === 0) {
+      container.innerHTML = '<div class="cart-drawer-empty"><span class="material-symbols-outlined">shopping_bag</span><p>Your cart is empty</p><a href="/collections/all" class="cart-drawer-shop-link">Start Shopping</a></div>';
+      return;
+    }
+
+    var html = '';
+    items.forEach(function(item) {
+      var variantHtml = (item.variant_title && item.variant_title !== 'Default Title')
+        ? '<p class="cart-item-variant">' + escHtml(item.variant_title) + '</p>' : '';
+
+      var imgSrc = item.image ? item.image.replace(/(\.(jpg|jpeg|png|gif|webp))/, '_160x$1') : '';
+      var imgHtml = imgSrc
+        ? '<img src="' + imgSrc + '" alt="' + escHtml(item.title) + '" class="cart-item-image" width="96" height="96" loading="lazy">'
+        : '<div class="cart-item-no-image"><span class="material-symbols-outlined">image_not_supported</span></div>';
+
+      // গুরুত্বপূর্ণ: Shopify API-তে variant_inventory_management যদি থাকে, তবেই স্টক চেক কার্যকর হয়।
+      // আমরা এখানে চেক করছি যদি বর্তমান quantity লিকুইড বা API থেকে আসা স্টক লিমিট ক্রস করে।
+      
+      html += '<div class="cart-item" data-key="' + item.key + '">';
+      html += '<div class="cart-item-image-wrap"><a href="' + item.url + '">' + imgHtml + '</a></div>';
+      html += '<div class="cart-item-info">';
+      html += '<div class="cart-item-top">';
+      html += '<div><h3 class="cart-item-title"><a href="' + item.url + '">' + escHtml(item.product_title) + '</a></h3>' + variantHtml + '</div>';
+      html += '<button class="cart-item-remove" data-key="' + item.key + '"><span class="material-symbols-outlined">delete</span></button>';
+      html += '</div>';
+      html += '<div class="cart-item-bottom">';
+      html += '<div class="cart-item-qty-wrap">';
+      html += '<button class="cart-item-qty-btn minus" data-key="' + item.key + '"><span class="material-symbols-outlined">remove</span></button>';
+      html += '<span class="cart-item-qty">' + item.quantity + '</span>';
+      
+      // প্লাস বাটন - ইনভেন্টরি চেক লজিক সহ
+      html += '<button class="cart-item-qty-btn plus" data-key="' + item.key + '"><span class="material-symbols-outlined">add</span></button>';
+      
+      html += '</div>';
+      html += '<span class="cart-item-price">' + formatMoney(item.final_line_price) + '</span>';
+      html += '</div></div></div>';
+    });
+
+    container.innerHTML = html;
+    bindItemEvents();
+  }
+
+  // =============================================
+  // QTY CHANGE LOGIC (STOCKED CHECKED)
+  // =============================================
+  function bindItemEvents() {
+    document.querySelectorAll('.cart-item-qty-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var key = this.dataset.key;
+        var itemEl = this.closest('.cart-item');
+        var currentQty = parseInt(itemEl.querySelector('.cart-item-qty').textContent, 10);
+        var isPlus = this.classList.contains('plus');
+        var newQty = isPlus ? currentQty + 1 : currentQty - 1;
+
+        if (newQty < 1 && !isPlus) {
+          updateLineItem(key, 0); // ১ এর নিচে গেলে রিমুভ হবে
+          return;
+        }
+
+        // বাটন সাময়িকভাবে ডিজেবল করা যাতে ডাবল ক্লিক না হয়
+        this.disabled = true;
+        updateLineItem(key, newQty, isPlus ? this : null);
+      });
+    });
+
+    document.querySelectorAll('.cart-item-remove').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        this.disabled = true;
+        updateLineItem(this.dataset.key, 0);
+      });
+    });
+  }
+
+  function updateLineItem(key, qty, clickedBtn) {
+    fetch('/cart/change.js', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: key, quantity: qty })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(cart) {
+      // স্টক চেক: যদি আমরা যে quantity চেয়েছি, Shopify তার চেয়ে কম দেয়, তার মানে স্টক শেষ
+      var updatedItem = cart.items.find(function(item) {
+        return item.key === key || item.id == key;
+      });
+
+      if (clickedBtn && updatedItem && updatedItem.quantity < qty) {
+        alert("Cannot add more. Stock limit reached!");
+        clickedBtn.style.opacity = "0.3";
+        clickedBtn.style.pointerEvents = "none";
+      }
+      
+      updateCartUI(cart);
+    })
+    .catch(function(err) {
+      console.error("Cart Update Error:", err);
+      refreshCart();
+    });
+  }
+
+  // =============================================
+  // HELPERS
+  // =============================================
+  function formatMoney(cents) {
+    return '$' + (cents / 100).toFixed(2);
+  }
+  function escHtml(str) {
+    var d = document.createElement('div'); d.textContent = str; return d.innerHTML;
+  }
+
+  bindItemEvents();
+
+})();
+</script>
+
+<style>
+  /* স্টক না থাকলে বাটন যেমন দেখাবে */
+  .cart-item-qty-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+</style>

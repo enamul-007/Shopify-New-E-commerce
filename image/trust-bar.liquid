@@ -1,0 +1,64 @@
+<section class="trust-bar-section">
+  <div class="container">
+    <div class="trust-bar-grid">
+      {% for block in section.blocks %}
+        <div class="trust-item" {{ block.shopify_attributes }}>
+          <div class="trust-icon">
+            <span class="material-symbols-outlined">{{ block.settings.icon }}</span>
+          </div>
+          <div class="trust-text">
+            <h3>{{ block.settings.title }}</h3>
+            <p>{{ block.settings.subtitle }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Trust Bar",
+  "tag": "section",
+  "class": "trust-bar-section-wrapper",
+  "max_blocks": 6,
+  "blocks": [
+    {
+      "type": "feature",
+      "name": "Feature Item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "icon",
+          "label": "Material Icon Name",
+          "default": "local_shipping",
+          "info": "Use any Material Symbols icon name. E.g. local_shipping, replay, lock, support_agent"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Free Shipping"
+        },
+        {
+          "type": "text",
+          "id": "subtitle",
+          "label": "Subtitle",
+          "default": "On all orders over $50"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Trust Bar",
+      "blocks": [
+        { "type": "feature", "settings": { "icon": "local_shipping", "title": "Free Shipping", "subtitle": "On all orders over $50" } },
+        { "type": "feature", "settings": { "icon": "replay", "title": "Easy Returns", "subtitle": "30-day money back guarantee" } },
+        { "type": "feature", "settings": { "icon": "lock", "title": "Secure Payment", "subtitle": "100% secure checkout" } },
+        { "type": "feature", "settings": { "icon": "support_agent", "title": "24/7 Support", "subtitle": "Dedicated support team" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

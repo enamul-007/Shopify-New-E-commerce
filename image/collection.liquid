@@ -1,0 +1,289 @@
+{% comment %}
+  Template: templates/collection.liquid
+  Shopify Collection Page — Shop All Products
+{% endcomment %}
+
+<main class="collection-page">
+  <div class="container">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <ol class="breadcrumb-list">
+        <li>
+          <a href="{{ routes.root_url }}">Home</a>
+        </li>
+        <li>
+          <span class="material-symbols-outlined">chevron_right</span>
+          <span class="breadcrumb-current">{{ collection.title | default: 'Shop' }}</span>
+        </li>
+      </ol>
+    </nav>
+
+    <!-- Page Title -->
+    <div class="collection-title-row">
+      <h1 class="collection-title">{{ collection.title | default: 'All Products' }}</h1>
+    </div>
+
+    <div class="collection-layout">
+
+      <!-- ===================== SIDEBAR ===================== -->
+      <aside class="collection-sidebar" id="collection-sidebar">
+
+        <!-- Search -->
+        <div class="filter-search-wrap">
+          <input
+            type="text"
+            id="filter-search"
+            class="filter-search-input"
+            placeholder="Search products..."
+            autocomplete="off"
+          >
+          <span class="material-symbols-outlined filter-search-icon">search</span>
+        </div>
+
+        <!-- Categories -->
+        <div class="filter-group">
+          <h3 class="filter-heading">Categories</h3>
+          <ul class="filter-category-list">
+            {% for link in linklists['all-collections'].links %}
+              <li>
+                <a
+                  href="{{ link.url }}"
+                  class="filter-category-link {% if link.active %}active{% endif %}"
+                >
+                  {{ link.title }}
+                  {% assign cat_col = collections[link.handle] %}
+                  {% if cat_col %}
+                    <span class="filter-category-count">{{ cat_col.products_count }}</span>
+                  {% endif %}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Price Range -->
+        <div class="filter-group">
+          <h3 class="filter-heading">Price</h3>
+          <div class="filter-price-wrap">
+            <input
+              type="range"
+              id="price-range"
+              class="filter-range"
+              min="0"
+              max="1000"
+              value="1000"
+              step="10"
+            >
+            <div class="filter-price-labels">
+              <span>$0</span>
+              <span class="filter-price-value" id="price-range-value">$1000+</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Color -->
+        <div class="filter-group">
+          <h3 class="filter-heading">Color</h3>
+          <div class="filter-color-grid">
+            <button class="color-swatch" style="background:#ffffff; border: 1px solid #666;" data-color="White" aria-label="White"></button>
+            <button class="color-swatch" style="background:#111111;" data-color="Black" aria-label="Black"></button>
+            <button class="color-swatch" style="background:#2563eb;" data-color="Blue" aria-label="Blue"></button>
+            <button class="color-swatch" style="background:#ef4444;" data-color="Red" aria-label="Red"></button>
+            <button class="color-swatch" style="background:#16a34a;" data-color="Green" aria-label="Green"></button>
+            <button class="color-swatch" style="background:#facc15;" data-color="Yellow" aria-label="Yellow"></button>
+            <button class="color-swatch" style="background:#9333ea;" data-color="Purple" aria-label="Purple"></button>
+            <button class="color-swatch" style="background:#f472b6;" data-color="Pink" aria-label="Pink"></button>
+            <button class="color-swatch" style="background:#9ca3af;" data-color="Gray" aria-label="Gray"></button>
+            <button class="color-swatch" style="background:#f97316;" data-color="Orange" aria-label="Orange"></button>
+          </div>
+        </div>
+
+        <!-- Size -->
+        <div class="filter-group">
+          <h3 class="filter-heading">Size</h3>
+          <div class="filter-size-grid">
+            {% assign sizes = 'XS,S,M,L,XL,XXL' | split: ',' %}
+            {% for size in sizes %}
+              <button class="size-btn" data-size="{{ size }}">{{ size }}</button>
+            {% endfor %}
+          </div>
+        </div>
+
+      </aside>
+      <!-- ===================== END SIDEBAR ===================== -->
+
+      <!-- ===================== PRODUCTS ===================== -->
+      <div class="collection-main">
+
+        <!-- Toolbar -->
+        <div class="collection-toolbar">
+          <p class="toolbar-count">
+            Showing
+            <span class="toolbar-count-bold">{{ paginate.current_offset | plus: 1 }}–{{ paginate.current_offset | plus: collection.products.size }}</span>
+            of
+            <span class="toolbar-count-bold">{{ collection.products_count }}</span>
+            products
+          </p>
+          <div class="toolbar-sort-wrap">
+            <label class="toolbar-sort-label" for="sort-by">Sort by:</label>
+            <div class="toolbar-select-wrap">
+              <select id="sort-by" class="toolbar-select" onchange="window.location = '?sort_by=' + this.value">
+                <option value="manual" {% if collection.sort_by == 'manual' %}selected{% endif %}>Featured</option>
+                <option value="created-descending" {% if collection.sort_by == 'created-descending' %}selected{% endif %}>Newest Arrivals</option>
+                <option value="price-ascending" {% if collection.sort_by == 'price-ascending' %}selected{% endif %}>Price: Low to High</option>
+                <option value="price-descending" {% if collection.sort_by == 'price-descending' %}selected{% endif %}>Price: High to Low</option>
+                <option value="best-selling" {% if collection.sort_by == 'best-selling' %}selected{% endif %}>Best Selling</option>
+              </select>
+              <span class="material-symbols-outlined toolbar-select-icon">expand_more</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Grid -->
+        {% paginate collection.products by 12 %}
+          <div class="col-product-grid" id="product-grid">
+            {% for product in collection.products %}
+              <div class="col-product-card group">
+                <div class="col-product-image-wrap">
+                  <a href="{{ product.url }}">
+                    {% if product.featured_image %}
+                      <img
+                        src="{{ product.featured_image | img_url: '500x' }}"
+                        alt="{{ product.featured_image.alt | escape }}"
+                        class="col-product-image"
+                        loading="lazy"
+                      >
+                    {% else %}
+                      <div class="col-product-no-image">
+                        <span class="material-symbols-outlined">image_not_supported</span>
+                      </div>
+                    {% endif %}
+                  </a>
+
+                  <!-- Add to Cart Button -->
+                  <button
+                    class="col-add-cart-btn"
+                    data-variant-id="{{ product.first_available_variant.id }}"
+                    aria-label="Add {{ product.title }} to cart"
+                  >
+                    <span class="material-symbols-outlined">add_shopping_cart</span>
+                  </button>
+
+                  <!-- Hover Overlay -->
+                  <div class="col-product-hover-overlay"></div>
+
+                  <!-- Badge -->
+                  {% if product.compare_at_price > product.price %}
+                    {% assign discount = product.compare_at_price | minus: product.price | times: 100 | divided_by: product.compare_at_price %}
+                    <span class="col-product-badge sale">-{{ discount }}%</span>
+                  {% elsif product.tags contains 'new' %}
+                    <span class="col-product-badge new">New</span>
+                  {% endif %}
+                </div>
+
+                <div class="col-product-info">
+                  <h3 class="col-product-name">
+                    <a href="{{ product.url }}">{{ product.title }}</a>
+                  </h3>
+                  <div class="col-product-pricing">
+                    <span class="col-product-price">{{ product.price | money }}</span>
+                    {% if product.compare_at_price > product.price %}
+                      <span class="col-product-compare">{{ product.compare_at_price | money }}</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <div class="col-no-products">
+                <span class="material-symbols-outlined">inventory_2</span>
+                <p>No products found.</p>
+              </div>
+            {% endfor %}
+          </div>
+
+          <!-- Pagination -->
+          {% if paginate.pages > 1 %}
+            <nav class="col-pagination" aria-label="Page navigation">
+              {% if paginate.previous %}
+                <a href="{{ paginate.previous.url }}" class="page-btn">Previous</a>
+              {% else %}
+                <span class="page-btn disabled">Previous</span>
+              {% endif %}
+
+              {% for part in paginate.parts %}
+                {% if part.is_link %}
+                  <a href="{{ part.url }}" class="page-btn {% if part.title == paginate.current_page %}active{% endif %}">{{ part.title }}</a>
+                {% else %}
+                  {% if part.title == paginate.current_page %}
+                    <span class="page-btn active">{{ part.title }}</span>
+                  {% else %}
+                    <span class="page-btn ellipsis">{{ part.title }}</span>
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+
+              {% if paginate.next %}
+                <a href="{{ paginate.next.url }}" class="page-btn">Next</a>
+              {% else %}
+                <span class="page-btn disabled">Next</span>
+              {% endif %}
+            </nav>
+          {% endif %}
+
+        {% endpaginate %}
+
+      </div>
+      <!-- ===================== END PRODUCTS ===================== -->
+
+    </div>
+  </div>
+</main>
+
+<!-- Add to Cart JS -->
+<script>
+  document.querySelectorAll('.col-add-cart-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var variantId = this.dataset.variantId;
+      if (!variantId) return;
+      fetch('/cart/add.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: variantId, quantity: 1 })
+      })
+      .then(res => res.json())
+      .then(() => {
+        document.dispatchEvent(new CustomEvent('cart:updated'));
+        this.innerHTML = '<span class="material-symbols-outlined">check</span>';
+        setTimeout(() => {
+          this.innerHTML = '<span class="material-symbols-outlined">add_shopping_cart</span>';
+        }, 1500);
+      });
+    });
+  });
+
+  // Price range label
+  var rangeInput = document.getElementById('price-range');
+  var rangeValue = document.getElementById('price-range-value');
+  if (rangeInput && rangeValue) {
+    rangeInput.addEventListener('input', function() {
+      rangeValue.textContent = this.value == this.max ? '$' + this.value + '+' : '$' + this.value;
+    });
+  }
+
+  // Size toggle
+  document.querySelectorAll('.size-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  // Color swatch toggle
+  document.querySelectorAll('.color-swatch').forEach(function(swatch) {
+    swatch.addEventListener('click', function() {
+      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>

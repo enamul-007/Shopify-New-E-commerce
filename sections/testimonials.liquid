@@ -1,0 +1,99 @@
+<section class="testimonials-section">
+  <div class="container">
+    <div class="section-header centered">
+      <h2 class="section-title">{{ section.settings.heading }}</h2>
+    </div>
+    <div class="testimonials-grid">
+      {% for block in section.blocks %}
+        <div class="testimonial-card" {{ block.shopify_attributes }}>
+          <div class="testimonial-avatar">
+            {% if block.settings.avatar != blank %}
+              <img src="{{ block.settings.avatar | img_url: '100x100', crop: 'center' }}" alt="{{ block.settings.name }}">
+            {% else %}
+              <div class="avatar-placeholder">{{ block.settings.name | slice: 0 }}</div>
+            {% endif %}
+          </div>
+          <div class="testimonial-stars">
+            {% assign rating = block.settings.rating | default: 5 %}
+            {% for i in (1..5) %}
+              {% if i <= rating %}
+                <span class="material-symbols-outlined star filled" style="font-variation-settings: 'FILL' 1">star</span>
+              {% else %}
+                <span class="material-symbols-outlined star">star</span>
+              {% endif %}
+            {% endfor %}
+          </div>
+          <p class="testimonial-text">"{{ block.settings.review }}"</p>
+          <h4 class="testimonial-name">{{ block.settings.name }}</h4>
+          <span class="testimonial-location">{{ block.settings.location }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Testimonials",
+  "tag": "section",
+  "class": "testimonials-section-wrapper",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Section Heading",
+      "default": "What Our Customers Say"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Review",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "avatar",
+          "label": "Customer Photo"
+        },
+        {
+          "type": "text",
+          "id": "name",
+          "label": "Customer Name",
+          "default": "Sarah Jenkins"
+        },
+        {
+          "type": "text",
+          "id": "location",
+          "label": "Location",
+          "default": "New York, USA"
+        },
+        {
+          "type": "range",
+          "id": "rating",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "label": "Star Rating",
+          "default": 5
+        },
+        {
+          "type": "textarea",
+          "id": "review",
+          "label": "Review Text",
+          "default": "Absolutely love the quality of the fabrics!"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Testimonials",
+      "blocks": [
+        { "type": "review", "settings": { "name": "Sarah Jenkins", "location": "New York, USA", "rating": 5 } },
+        { "type": "review", "settings": { "name": "Mark Thompson", "location": "London, UK", "rating": 4 } },
+        { "type": "review", "settings": { "name": "Emily Chen", "location": "Toronto, CA", "rating": 5 } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,122 @@
+{% comment %}
+  Snippet: snippets/cart-drawer.liquid
+  Usage: {% render 'cart-drawer' %}
+  theme.liquid এ body এর শেষে রাখো
+{% endcomment %}
+
+<!-- Cart Overlay -->
+<div class="cart-overlay" id="cart-overlay" aria-hidden="true"></div>
+
+<!-- Cart Drawer -->
+<aside class="cart-drawer" id="cart-drawer" role="dialog" aria-modal="true" aria-label="Shopping Cart" hidden>
+
+  <!-- Header -->
+  <div class="cart-drawer-header">
+    <div class="cart-drawer-title-wrap">
+      <h2 class="cart-drawer-title">Shopping Cart</h2>
+      <span class="cart-drawer-count" id="cart-drawer-count">{{ cart.item_count }} item{% if cart.item_count != 1 %}s{% endif %}</span>
+    </div>
+    <button class="cart-drawer-close" id="cart-drawer-close" aria-label="Close cart">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+  </div>
+
+  <!-- Items -->
+  <div class="cart-drawer-items" id="cart-drawer-items">
+    {% if cart.item_count == 0 %}
+      <div class="cart-drawer-empty" id="cart-empty-state">
+        <span class="material-symbols-outlined">shopping_bag</span>
+        <p>Your cart is empty</p>
+        <a href="{{ routes.collections_url }}" class="cart-drawer-shop-link">Start Shopping</a>
+      </div>
+    {% else %}
+      {% for item in cart.items %}
+        <div class="cart-item" data-key="{{ item.key }}">
+          <div class="cart-item-image-wrap">
+            <a href="{{ item.url }}">
+              <img
+                src="{{ item.image | img_url: '160x' }}"
+                alt="{{ item.image.alt | default: item.title | escape }}"
+                class="cart-item-image"
+                width="96"
+                height="96"
+                loading="lazy"
+              >
+            </a>
+          </div>
+          <div class="cart-item-info">
+            <div class="cart-item-top">
+              <div>
+                <h3 class="cart-item-title">
+                  <a href="{{ item.url }}">{{ item.product.title }}</a>
+                </h3>
+                {% unless item.variant.title == 'Default Title' %}
+                  <p class="cart-item-variant">{{ item.variant.title }}</p>
+                {% endunless %}
+              </div>
+              <button
+                class="cart-item-remove"
+                data-key="{{ item.key }}"
+                aria-label="Remove {{ item.title }}"
+              >
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+            <div class="cart-item-bottom">
+              <div class="cart-item-qty-wrap">
+                <button class="cart-item-qty-btn minus" data-key="{{ item.key }}" data-qty="{{ item.quantity | minus: 1 }}" aria-label="Decrease quantity">
+                  <span class="material-symbols-outlined">remove</span>
+                </button>
+                <span class="cart-item-qty">{{ item.quantity }}</span>
+                <button class="cart-item-qty-btn plus" data-key="{{ item.key }}" data-qty="{{ item.quantity | plus: 1 }}" aria-label="Increase quantity">
+                  <span class="material-symbols-outlined">add</span>
+                </button>
+              </div>
+              <span class="cart-item-price">{{ item.final_line_price | money }}</span>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <!-- Footer -->
+  <div class="cart-drawer-footer" id="cart-drawer-footer" {% if cart.item_count == 0 %}style="display:none"{% endif %}>
+
+    <!-- Promo Code -->
+    <div class="cart-promo-wrap">
+      <div class="cart-promo-input-wrap">
+        <input
+          type="text"
+          id="cart-promo-input"
+          class="cart-promo-input"
+          placeholder="Promo code"
+          autocomplete="off"
+        >
+        <button class="cart-promo-btn" id="cart-promo-btn">Apply</button>
+      </div>
+    </div>
+
+    <!-- Totals -->
+    <div class="cart-totals">
+      <div class="cart-total-row">
+        <span>Subtotal</span>
+        <span class="cart-subtotal-value" id="cart-subtotal">{{ cart.total_price | money }}</span>
+      </div>
+      <div class="cart-total-row secondary">
+        <span>Shipping</span>
+        <span class="italic">Calculated at checkout</span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="cart-drawer-actions">
+      <a href="{{ routes.cart_url | append: '/checkout' }}" class="cart-checkout-btn" id="cart-checkout-btn">
+        Checkout Now
+      </a>
+      <a href="{{ routes.cart_url }}" class="cart-view-link">View My Cart</a>
+    </div>
+
+  </div>
+
+</aside>

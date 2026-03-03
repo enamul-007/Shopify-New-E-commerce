@@ -1,0 +1,150 @@
+<section class="trending-section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">{{ section.settings.heading }}</h2>
+    </div>
+    <div class="trending-grid">
+      {% for block in section.blocks %}
+        <div class="trending-card" {{ block.shopify_attributes }}>
+          <a href="{{ block.settings.product_url }}">
+            <div class="trending-card-image-wrap">
+              {% if block.settings.image != blank %}
+                <img
+                  src="{{ block.settings.image | img_url: '600x600', crop: 'center' }}"
+                  alt="{{ block.settings.title }}"
+                  class="trending-card-image"
+                  loading="lazy"
+                >
+              {% else %}
+                <div class="trending-card-placeholder">
+                  <span class="material-symbols-outlined">image</span>
+                </div>
+              {% endif %}
+            </div>
+            <div class="trending-card-info">
+              <h4 class="trending-card-title">{{ block.settings.title }}</h4>
+              <p class="trending-card-price">{{ block.settings.price }}</p>
+            </div>
+          </a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<style>
+.trending-section {
+  padding: 4rem 0;
+  background: var(--color-dark-base);
+}
+.trending-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+@media (min-width: 640px) { .trending-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .trending-grid { grid-template-columns: repeat(4, 1fr); } }
+.trending-card {
+  background: var(--color-dark-surface);
+  border: 1px solid var(--color-dark-border);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  transition: var(--transition);
+}
+.trending-card:hover { border-color: var(--color-primary); box-shadow: 0 4px 24px rgba(25,127,230,0.1); }
+.trending-card-image-wrap {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  aspect-ratio: 1 / 1;
+  background: var(--color-dark-base);
+  border: 1px solid var(--color-dark-border);
+  margin-bottom: 1rem;
+}
+.trending-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.9;
+  transition: transform 0.5s ease, opacity 0.3s ease;
+}
+.trending-card:hover .trending-card-image { transform: scale(1.1); opacity: 1; }
+.trending-card-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  font-size: 2rem;
+}
+.trending-card-title {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 0.35rem;
+}
+.trending-card-price {
+  font-weight: 700;
+  color: var(--color-primary);
+  font-size: 1rem;
+}
+</style>
+
+{% schema %}
+{
+  "name": "Trending Now",
+  "tag": "section",
+  "class": "trending-section-wrapper",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Section Heading",
+      "default": "Trending Now"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "trending_item",
+      "name": "Trending Item",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Product Image"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Product Title",
+          "default": "Modern Blazer"
+        },
+        {
+          "type": "text",
+          "id": "price",
+          "label": "Price",
+          "default": "$129.00"
+        },
+        {
+          "type": "url",
+          "id": "product_url",
+          "label": "Product URL"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Trending Now",
+      "blocks": [
+        { "type": "trending_item", "settings": { "title": "Modern Blazer", "price": "$129.00" } },
+        { "type": "trending_item", "settings": { "title": "Silk Scarf", "price": "$45.00" } },
+        { "type": "trending_item", "settings": { "title": "Minimalist Watch", "price": "$199.00" } },
+        { "type": "trending_item", "settings": { "title": "Oxford Shirt", "price": "$89.00" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

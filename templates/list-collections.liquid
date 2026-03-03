@@ -1,0 +1,92 @@
+{% comment %}
+  Template: templates/list-collections.liquid
+  This page represents the /collections page.
+{% endcomment %}
+
+{{ 'index.css' | asset_url | stylesheet_tag }}
+
+<div class="collections-list-page">
+  <div class="collections-list-container">
+
+    <!-- Hero Header -->
+    <div class="cl-hero">
+      <div class="cl-hero-bg"></div>
+      <div class="cl-hero-content">
+        <p class="cl-hero-eyebrow">Explore</p>
+        <h1 class="cl-hero-title">{{ page_title | default: 'All Collections' }}</h1>
+        <p class="cl-hero-sub">Discover our curated range of collections</p>
+      </div>
+    </div>
+
+    <!-- Collections Grid -->
+    <div class="cl-grid">
+      {% assign index = 0 %}
+      {% for collection in collections %}
+        {% unless collection.handle == 'frontpage' %}
+          {% assign index = index | plus: 1 %}
+
+          {%- assign image_object = collection.image | default: collection.products.first.featured_image -%}
+
+          <a href="{{ collection.url }}" class="cl-card" style="--i: {{ index }}">
+
+            <!-- Image -->
+            <div class="cl-card-img-wrap">
+              {% if image_object != blank %}
+                <img
+                  src="{{ image_object | img_url: '600x600', crop: 'center' }}"
+                  alt="{{ image_object.alt | default: collection.title | escape }}"
+                  class="cl-card-img"
+                  loading="lazy"
+                  width="600"
+                  height="600"
+                >
+              {% else %}
+                {% capture current %}{% cycle 1, 2, 3, 4, 5, 6 %}{% endcapture %}
+                <div class="cl-card-placeholder">
+                  {{ 'collection-' | append: current | placeholder_svg_tag: 'cl-placeholder-svg' }}
+                </div>
+              {% endif %}
+
+              <!-- Overlay -->
+              <div class="cl-card-overlay"></div>
+
+              <!-- Product Count Badge -->
+              <span class="cl-card-count">
+                {{ collection.products_count }}
+                item{% if collection.products_count != 1 %}s{% endif %}
+              </span>
+
+              <!-- Hover CTA -->
+              <div class="cl-card-cta">
+                <span>Shop Now</span>
+                <span class="material-symbols-outlined">arrow_forward</span>
+              </div>
+            </div>
+
+            <!-- Info -->
+            <div class="cl-card-info">
+              <h2 class="cl-card-title">{{ collection.title }}</h2>
+              {% if collection.description != blank %}
+                <p class="cl-card-desc">{{ collection.description | strip_html | truncatewords: 12 }}</p>
+              {% endif %}
+              <span class="cl-card-link">
+                Browse Collection
+                <span class="material-symbols-outlined">east</span>
+              </span>
+            </div>
+
+          </a>
+
+        {% endunless %}
+      {% endfor %}
+
+      {% if collections.size == 0 %}
+        <div class="cl-empty">
+          <span class="material-symbols-outlined">grid_view</span>
+          <p>No collections found.</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>

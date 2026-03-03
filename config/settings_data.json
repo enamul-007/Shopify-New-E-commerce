@@ -1,0 +1,70 @@
+{
+  "current": {
+    "sections": {
+      "hero-banner": {
+        "type": "hero-banner",
+        "settings": {
+          "background_image": "",
+          "badge_text": "New Season",
+          "heading_line1": "Discover Your",
+          "heading_line2": "Unique Style",
+          "subheading": "Premium fashion for the modern lifestyle.",
+          "primary_button_label": "Shop Now",
+          "primary_button_url": "/collections/all",
+          "secondary_button_label": "Explore Collection",
+          "secondary_button_url": "/collections/summer"
+        }
+      },
+      "featured-collection": {
+        "type": "featured-collection",
+        "settings": {
+          "collection": "frontpage"
+        }
+      },
+      "trust-bar": {
+        "type": "trust-bar",
+        "settings": {}
+      }
+    },
+    "content_for_index": [
+      "hero-banner",
+      "featured-collection",
+      "trust-bar"
+    ]
+  },
+  "presets": {
+    "Default": {
+      "sections": {
+        "hero-banner": {
+          "type": "hero-banner",
+          "settings": {
+            "background_image": "",
+            "badge_text": "New Season",
+            "heading_line1": "Discover Your",
+            "heading_line2": "Unique Style",
+            "subheading": "Premium fashion for the modern lifestyle.",
+            "primary_button_label": "Shop Now",
+            "primary_button_url": "/collections/all",
+            "secondary_button_label": "Explore Collection",
+            "secondary_button_url": "/collections/summer"
+          }
+        },
+        "featured-collection": {
+          "type": "featured-collection",
+          "settings": {
+            "collection": "frontpage"
+          }
+        },
+        "trust-bar": {
+          "type": "trust-bar",
+          "settings": {}
+        }
+      },
+      "content_for_index": [
+        "hero-banner",
+        "featured-collection",
+        "trust-bar"
+      ]
+    }
+  }
+}
