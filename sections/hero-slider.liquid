@@ -1,0 +1,229 @@
+{{ 'hero-slider.css' | asset_url | stylesheet_tag }}
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+{%- style -%}
+#{{ section.id }} {
+  height: {{ section.settings.height | default: 650 }}px;
+}
+#{{ section.id }} .hs-progress-fill {
+  animation-duration: {{ section.settings.autoplay_speed | default: 5 }}s;
+}
+
+{%- for block in section.blocks -%}
+  {%- assign align = block.settings.content_alignment | default: 'left' -%}
+
+  {%- if align == 'left' -%}
+    #{{ section.id }} .slide[data-block="{{ block.id }}"] .hs-overlay {
+      background: linear-gradient(to right, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.45) 55%, transparent 100%);
+    }
+    #{{ section.id }} .slide[data-block="{{ block.id }}"] .hs-content { justify-content: flex-start; text-align: left; }
+    #{{ section.id }} .slide[data-block="{{ block.id }}"] .hs-buttons { justify-content: flex-start; }
+
+  {%- elsif align == 'right' -%}
+    #{{ section.id }} .slide[data-block="{{ block.id }}"] .hs-overlay {
+      background: linear-gradient(to left, rgba(0,0,0,0.80) 0%, rgba(0,0,0,0.45) 55%, transparent 100%);
+    }
+    #{{ section.id }} .slide[data-block="{{ block.id }}"] .hs-content { justify-content: flex-end; text-align: right; }
+    #{{ section.id }} .slide[data-block="{{ block.id }}"] .hs-buttons { justify-content: flex-end; }
+
+  {%- else -%}
+    #{{ section.id }} .slide[data-block="{{ block.id }}"] .hs-overlay { background: rgba(0,0,0,0.50); }
+    #{{ section.id }} .slide[data-block="{{ block.id }}"] .hs-content { justify-content: center; text-align: center; }
+    #{{ section.id }} .slide[data-block="{{ block.id }}"] .hs-buttons { justify-content: center; }
+  {%- endif -%}
+
+{%- endfor -%}
+{%- endstyle -%}
+
+<section class="hs-root" id="{{ section.id }}">
+
+  {%- for block in section.blocks -%}
+    <div class="slide{% if forloop.first %} active{% endif %}" data-block="{{ block.id }}" {{ block.shopify_attributes }}>
+
+      {%- if block.settings.image -%}
+        <div class="hs-bg" style="background-image: url('{{ block.settings.image | image_url: width: 1800 }}');"></div>
+      {%- else -%}
+        <div class="hs-bg hs-bg-placeholder"></div>
+      {%- endif -%}
+
+      <div class="hs-overlay"></div>
+
+      <div class="hs-content">
+        <div class="hs-inner">
+
+          {%- if block.settings.badge != blank -%}
+            <span class="hs-badge">{{ block.settings.badge }}</span>
+          {%- endif -%}
+
+          {%- if block.settings.heading != blank -%}
+            <h2 class="hs-title">{{ block.settings.heading }}</h2>
+          {%- endif -%}
+
+          {%- if block.settings.subheading != blank -%}
+            <p class="hs-subtitle">{{ block.settings.subheading }}</p>
+          {%- endif -%}
+
+          {%- if block.settings.button_label != blank -%}
+            <div class="hs-buttons">
+              <a href="{{ block.settings.button_link | default: '#' }}" class="hs-btn">
+                {{ block.settings.button_label }}
+                {%- if block.settings.show_button_icon -%}
+                  <span class="material-symbols-outlined hs-btn-icon" aria-hidden="true">arrow_forward</span>
+                {%- endif -%}
+              </a>
+            </div>
+          {%- endif -%}
+
+        </div>
+      </div>
+
+    </div>
+  {%- endfor -%}
+
+  <button class="hs-nav hs-nav-prev" aria-label="Previous slide">
+    <span class="material-symbols-outlined">chevron_left</span>
+  </button>
+  <button class="hs-nav hs-nav-next" aria-label="Next slide">
+    <span class="material-symbols-outlined">chevron_right</span>
+  </button>
+
+  {%- if section.settings.pagination_type != 'none' -%}
+    <div class="hs-dots">
+      {%- for block in section.blocks -%}
+        {%- if section.settings.pagination_type == 'numbers' -%}
+          <button class="hs-dot hs-dot-num{% if forloop.first %} active{% endif %}" data-index="{{ forloop.index0 }}" aria-label="Slide {{ forloop.index }}">{{ forloop.index }}</button>
+        {%- else -%}
+          <button class="hs-dot{% if forloop.first %} active{% endif %}" data-index="{{ forloop.index0 }}" aria-label="Slide {{ forloop.index }}"></button>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+
+  <div class="hs-progress">
+    <div class="hs-progress-fill"></div>
+  </div>
+
+</section>
+
+{% schema %}
+{
+  "name": "Hero Slider",
+  "tag": "section",
+  "class": "hero-section",
+  "settings": [
+    {
+      "type": "range",
+      "id": "height",
+      "min": 400,
+      "max": 900,
+      "step": 50,
+      "unit": "px",
+      "label": "Slider Height",
+      "default": 650
+    },
+    {
+      "type": "select",
+      "id": "pagination_type",
+      "label": "Pagination Style",
+      "options": [
+        { "value": "dots",    "label": "Dots"    },
+        { "value": "numbers", "label": "Numbers" },
+        { "value": "none",    "label": "None"    }
+      ],
+      "default": "dots"
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "label": "Autoplay Speed (seconds)",
+      "default": 5,
+      "min": 2,
+      "max": 15,
+      "step": 1
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "limit": 6,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Background Image"
+        },
+        {
+          "type": "select",
+          "id": "content_alignment",
+          "label": "Content Alignment",
+          "options": [
+            { "value": "left",   "label": "Left"   },
+            { "value": "center", "label": "Center" },
+            { "value": "right",  "label": "Right"  }
+          ],
+          "default": "left"
+        },
+        { "type": "text",     "id": "badge",            "label": "Badge Text",      "default": "New Arrivals 2024"                                },
+        { "type": "text",     "id": "heading",          "label": "Heading",         "default": "Discover Your Unique Style"                       },
+        { "type": "textarea", "id": "subheading",       "label": "Subheading",      "default": "Premium fashion curated for the modern lifestyle." },
+        { "type": "text",     "id": "button_label",     "label": "Button Label",    "default": "Shop Now"                                         },
+        { "type": "url",      "id": "button_link",      "label": "Button Link"                                                                    },
+        { "type": "checkbox", "id": "show_button_icon", "label": "Show Arrow Icon", "default": true                                               }
+      ]
+    }
+  ],
+  "presets": [
+    { "name": "Hero Slider", "blocks": [ { "type": "slide" } ] }
+  ]
+}
+{% endschema %}
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const slider = document.querySelector('#{{ section.id }}');
+  if (!slider) return;
+
+  const slides  = slider.querySelectorAll('.slide');
+  const dots    = slider.querySelectorAll('.hs-dot');
+  const prevBtn = slider.querySelector('.hs-nav-prev');
+  const nextBtn = slider.querySelector('.hs-nav-next');
+  const fill    = slider.querySelector('.hs-progress-fill');
+  const speed   = {{ section.settings.autoplay_speed | default: 5 }} * 1000;
+
+  let current = 0;
+  let timer   = null;
+  let paused  = false;
+
+  function goTo(index) {
+    slides[current].classList.remove('active');
+    dots[current]?.classList.remove('active');
+    current = (index + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    dots[current]?.classList.add('active');
+    if (fill) { fill.style.animation = 'none'; void fill.offsetWidth; fill.style.animation = ''; }
+  }
+
+  function start() {
+    clearInterval(timer);
+    if (!paused) timer = setInterval(() => goTo(current + 1), speed);
+  }
+
+  start();
+
+  prevBtn?.addEventListener('click', () => { goTo(current - 1); start(); });
+  nextBtn?.addEventListener('click', () => { goTo(current + 1); start(); });
+  dots.forEach((d, i) => d.addEventListener('click', () => { goTo(i); start(); }));
+
+  slider.addEventListener('mouseenter', () => { paused = true;  clearInterval(timer); });
+  slider.addEventListener('mouseleave', () => { paused = false; start(); });
+
+  let tx = 0;
+  slider.addEventListener('touchstart', e => { tx = e.changedTouches[0].clientX; }, { passive: true });
+  slider.addEventListener('touchend',   e => {
+    const d = tx - e.changedTouches[0].clientX;
+    if (Math.abs(d) > 40) { goTo(d > 0 ? current + 1 : current - 1); start(); }
+  }, { passive: true });
+});
+</script>

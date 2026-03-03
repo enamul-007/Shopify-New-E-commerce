@@ -1,0 +1,355 @@
+/* =============================================
+   HERO SLIDER — Matches MyShop HTML Design
+   Primary: #197fe6  |  Base: #121212
+   ============================================= */
+
+@keyframes hs-progress {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+@keyframes hs-fade-in {
+  from { opacity: 0; transform: scale(1.03); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes hs-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ── Root ── */
+.hs-root {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  background: #121212;
+  overflow: hidden;
+}
+
+
+/* ── Slide ── */
+.hs-root .slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.7s ease;
+}
+
+.hs-root .slide.active {
+  opacity: 1;
+  pointer-events: auto;
+  animation: hs-fade-in 0.7s ease forwards;
+}
+
+
+/* ── Background image ── */
+.hs-root .hs-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  transform: scale(1);
+  transition: transform 8s ease;
+}
+
+.hs-root .slide.active .hs-bg {
+  transform: scale(1.06);
+}
+
+.hs-root .hs-bg-placeholder {
+  background-color: #1e1e1e;
+}
+
+
+/* ── Overlay ── */
+.hs-root .hs-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.50);
+}
+
+
+/* ── Content ── */
+.hs-root .hs-content {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  padding: 0 clamp(16px, 5vw, 64px);
+  box-sizing: border-box;
+}
+
+.hs-root .hs-inner {
+  max-width: 640px;
+  width: 100%;
+}
+
+/* Staggered reveal */
+.hs-root .slide.active .hs-inner > *:nth-child(1) { animation: hs-up 0.6s ease 0.10s both; }
+.hs-root .slide.active .hs-inner > *:nth-child(2) { animation: hs-up 0.6s ease 0.22s both; }
+.hs-root .slide.active .hs-inner > *:nth-child(3) { animation: hs-up 0.6s ease 0.34s both; }
+.hs-root .slide.active .hs-inner > *:nth-child(4) { animation: hs-up 0.6s ease 0.46s both; }
+
+
+/* ── Badge ── */
+.hs-root .hs-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  margin-bottom: 24px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #197fe6;
+  background: rgba(25, 127, 230, 0.10);
+  border: 1px solid rgba(25, 127, 230, 0.20);
+  border-radius: 9999px;
+}
+
+
+/* ── Heading ── */
+.hs-root .hs-title {
+  color: #ffffff;
+  font-size: clamp(2.2rem, 5.5vw, 4.5rem);
+  font-weight: 900;
+  line-height: 1.1;
+  margin: 0 0 24px;
+  letter-spacing: -1px;
+}
+
+
+/* ── Subheading ── */
+.hs-root .hs-subtitle {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: clamp(0.95rem, 1.5vw, 1.2rem);
+  font-weight: 500;
+  line-height: 1.7;
+  margin: 0 0 36px;
+  max-width: 520px;
+}
+
+
+/* ── Buttons ── */
+.hs-root .hs-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hs-root .hs-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 15px 36px;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+  box-sizing: border-box;
+  background-color: #197fe6;
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 20px 40px rgba(25, 127, 230, 0.30);
+}
+
+.hs-root .hs-btn:hover {
+  background-color: rgba(25, 127, 230, 0.90);
+  box-shadow: 0 24px 48px rgba(25, 127, 230, 0.40);
+  transform: translateY(-1px);
+  color: #ffffff;
+}
+
+.hs-root .hs-btn-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+
+/* ── Nav arrows ── */
+.hs-root .hs-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.20);
+  border: 1px solid rgba(255, 255, 255, 0.20);
+  color: #ffffff;
+  border-radius: 50%;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  opacity: 0;
+}
+
+.hs-root:hover .hs-nav {
+  opacity: 1;
+}
+
+.hs-root .hs-nav:hover {
+  background: #197fe6;
+  border-color: #197fe6;
+  transform: translateY(-50%) scale(1.08);
+}
+
+.hs-root .hs-nav-prev { left: 32px; }
+.hs-root .hs-nav-next { right: 32px; }
+
+.hs-root .hs-nav .material-symbols-outlined {
+  font-size: 24px;
+}
+
+
+/* ── Dots ── */
+.hs-root .hs-dots {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.hs-root .hs-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.30);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.hs-root .hs-dot:hover {
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.hs-root .hs-dot.active {
+  background: #197fe6;
+  transform: scale(1.3);
+  box-shadow: 0 0 6px rgba(25, 127, 230, 0.60);
+}
+
+/* Number dots */
+.hs-root .hs-dot-num {
+  width: auto;
+  height: auto;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  transform: none;
+}
+
+.hs-root .hs-dot-num.active {
+  background: rgba(25, 127, 230, 0.20);
+  color: #197fe6;
+  border: 1px solid rgba(25, 127, 230, 0.40);
+  transform: none;
+  box-shadow: none;
+}
+
+
+/* ── Progress bar ── */
+.hs-root .hs-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  z-index: 30;
+}
+
+.hs-root .hs-progress-fill {
+  height: 100%;
+  width: 0;
+  background: #197fe6;
+  animation: hs-progress 5s linear forwards;
+}
+
+.hs-root:hover .hs-progress-fill {
+  animation-play-state: paused;
+}
+
+
+/* ── Mobile ── */
+@media (max-width: 767px) {
+  .hs-root {
+    height: 500px !important;
+  }
+
+  .hs-root .hs-overlay {
+    background: rgba(0, 0, 0, 0.62) !important;
+  }
+
+  .hs-root .hs-content {
+    align-items: flex-end;
+    padding-bottom: 80px;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .hs-root .hs-inner {
+    max-width: 100%;
+  }
+
+  .hs-root .hs-title {
+    font-size: clamp(1.8rem, 8vw, 2.6rem) !important;
+    letter-spacing: -0.5px;
+  }
+
+  .hs-root .hs-subtitle {
+    font-size: 0.9rem;
+    max-width: 100%;
+  }
+
+  .hs-root .hs-nav {
+    opacity: 1;
+    width: 40px;
+    height: 40px;
+  }
+
+  .hs-root .hs-nav-prev { left: 12px; }
+  .hs-root .hs-nav-next { right: 12px; }
+
+  .hs-root .hs-btn {
+    padding: 12px 24px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hs-root {
+    height: 420px !important;
+  }
+
+  .hs-root .hs-badge {
+    font-size: 10px;
+    padding: 5px 12px;
+    letter-spacing: 2px;
+  }
+}
