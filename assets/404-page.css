@@ -1,0 +1,228 @@
+/* ============================================
+   404-page.css
+   Place in: assets/404-page.css
+   ============================================ */
+
+/* ── Variables ─────────────────────────────── */
+:root {
+  --e4-primary:    #197fe6;
+  --e4-bg:         #111921;
+  --e4-surface:    #1e2a36;
+  --e4-border:     rgba(255,255,255,0.08);
+  --e4-text:       #f1f5f9;
+  --e4-muted:      #94a3b8;
+  --e4-radius:     0.75rem;
+  --e4-transition: 0.2s ease;
+}
+
+/* ── Page wrapper ───────────────────────────── */
+.e404-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 60vh;
+  background: var(--e4-bg);
+  color: var(--e4-text);
+  font-family: 'Inter', sans-serif;
+}
+
+/* ── Main ───────────────────────────────────── */
+.e404-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1.5rem;
+}
+
+.e404-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 720px;
+  width: 100%;
+  gap: 0;
+}
+
+/* ── Big 404 number ─────────────────────────── */
+.e404-number-wrap {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.e404-number {
+  font-size: clamp(6rem, 18vw, 11rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  color: var(--e4-text);
+  margin: 0;
+  filter: drop-shadow(0 0 30px rgba(25,127,230,0.3));
+}
+
+.e404-number-glow {
+  position: absolute;
+  inset: 0;
+  background: var(--e4-primary);
+  border-radius: 50%;
+  opacity: 0.08;
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+/* ── Illustration ───────────────────────────── */
+.e404-illustration {
+  margin-bottom: 3rem;
+}
+
+.e404-circle {
+  position: relative;
+  width: 16rem;
+  height: 16rem;
+  border-radius: 50%;
+  background: var(--e4-surface);
+  border: 1px solid var(--e4-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.e404-icon-bg {
+  font-size: 6rem;
+  color: rgba(25,127,230,0.35);
+  font-variation-settings: 'FILL' 0, 'wght' 200;
+}
+
+.e404-badge {
+  position: absolute;
+  bottom: -0.5rem;
+  right: -0.5rem;
+  width: 6rem;
+  height: 6rem;
+  border-radius: 1rem;
+  background: var(--e4-surface);
+  border: 1px solid var(--e4-border);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.e404-icon-badge {
+  font-size: 3rem;
+  color: var(--e4-primary);
+  font-variation-settings: 'FILL' 1;
+}
+
+/* ── Message ────────────────────────────────── */
+.e404-message {
+  margin-bottom: 2.5rem;
+}
+
+.e404-heading {
+  font-size: clamp(1.375rem, 3.5vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--e4-text);
+  margin: 0 0 1rem;
+  line-height: 1.3;
+}
+
+.e404-subtext {
+  font-size: 1.0625rem;
+  color: var(--e4-muted);
+  line-height: 1.7;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+/* ── Action buttons ─────────────────────────── */
+.e404-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 3rem;
+  width: 100%;
+}
+
+.e404-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 3.5rem;
+  padding: 0 2rem;
+  border-radius: var(--e4-radius);
+  font-size: 1rem;
+  font-weight: 700;
+  font-family: inherit;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all var(--e4-transition);
+}
+
+.e404-btn:active { transform: scale(0.97); }
+
+.e404-btn--primary {
+  background: var(--e4-primary);
+  color: #fff;
+  box-shadow: 0 8px 24px rgba(25,127,230,0.25);
+}
+
+.e404-btn--primary:hover {
+  background: #1a6fce;
+  box-shadow: 0 8px 32px rgba(25,127,230,0.4);
+  color: #fff;
+}
+
+.e404-btn--secondary {
+  background: var(--e4-surface);
+  color: var(--e4-text);
+  border: 1px solid var(--e4-border);
+}
+
+.e404-btn--secondary:hover {
+  background: #263445;
+  color: var(--e4-text);
+}
+
+.e404-btn .material-symbols-outlined {
+  font-size: 1.2rem;
+}
+
+/* ── Helper links ───────────────────────────── */
+.e404-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.e404-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--e4-muted);
+  text-decoration: none;
+  transition: color var(--e4-transition);
+}
+
+.e404-link:hover { color: var(--e4-primary); }
+
+.e404-link .material-symbols-outlined {
+  font-size: 1rem;
+}
+
+/* ── Responsive ─────────────────────────────── */
+@media (max-width: 480px) {
+  .e404-actions { flex-direction: column; align-items: stretch; }
+  .e404-btn     { width: 100%; }
+  .e404-circle  { width: 12rem; height: 12rem; }
+  .e404-icon-bg { font-size: 4.5rem; }
+  .e404-badge   { width: 4.5rem; height: 4.5rem; }
+  .e404-icon-badge { font-size: 2.25rem; }
+}

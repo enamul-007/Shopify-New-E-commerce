@@ -1,0 +1,65 @@
+{% comment %}
+  Snippet: snippets/wishlist-js.liquid
+  — সব page এ load হবে (theme.liquid থেকে render করো)
+  — window.Wishlist global API expose করে
+{% endcomment %}
+<script>
+(function() {
+  if (window.Wishlist) return; // already loaded
+
+  var STORAGE_KEY = 'wl_items';
+
+  function getItems() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch(e) { return []; }
+  }
+
+  function saveItems(items) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  }
+
+  window.Wishlist = {
+    add: function(item) {
+      var items = getItems();
+      if (!items.find(function(i) { return String(i.id) === String(item.id); })) {
+        items.push(item);
+        saveItems(items);
+        this._notify();
+      }
+    },
+    remove: function(id) {
+      saveItems(getItems().filter(function(i) { return String(i.id) !== String(id); }));
+      this._notify();
+    },
+    toggle: function(item) {
+      if (this.has(item.id)) {
+        this.remove(item.id);
+        return false;
+      } else {
+        this.add(item);
+        return true;
+      }
+    },
+    has: function(id) {
+      return !!getItems().find(function(i) { return String(i.id) === String(id); });
+    },
+    count: function() { return getItems().length; },
+    getAll: getItems,
+    // account page এর wishlist grid refresh করার জন্য
+    _notify: function() {
+      document.dispatchEvent(new CustomEvent('wishlist:updated'));
+    }
+  };
+
+  // Header এ wishlist count badge update (optional)
+  function updateWishlistCount() {
+    var countEls = document.querySelectorAll('[data-wishlist-count]');
+    var count    = window.Wishlist.count();
+    countEls.forEach(function(el) { el.textContent = count; });
+  }
+
+  document.addEventListener('wishlist:updated', updateWishlistCount);
+  document.addEventListener('DOMContentLoaded', updateWishlistCount);
+
+})();
+</script>

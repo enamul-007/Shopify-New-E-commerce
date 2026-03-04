@@ -1,266 +1,191 @@
-{% comment %}
-  Section: sections/wishlist.liquid
-{% endcomment %}
+{% layout 'theme' %}
+
 {{ 'wishlist.css' | asset_url | stylesheet_tag }}
 
 <main class="wl-main">
+
   <div class="wl-layout">
 
-    <!-- LEFT: Sidebar -->
+    <!-- Sidebar -->
     <aside class="wl-sidebar">
 
-      <!-- Profile Card -->
+      <!-- Profile -->
       <div class="wl-profile-card">
+
         <div class="wl-avatar-wrap">
+
           {% if customer.metafields.custom.avatar %}
-            <img src="{{ customer.metafields.custom.avatar }}" alt="{{ customer.name }}" class="wl-avatar-img">
+            <img src="{{ customer.metafields.custom.avatar }}" class="wl-avatar-img">
           {% else %}
             <div class="wl-avatar-placeholder">
               <span class="material-symbols-outlined">person</span>
             </div>
           {% endif %}
+
         </div>
-        <h2 class="wl-profile-name">{{ customer.name | default: 'Guest' }}</h2>
+
+        <h2 class="wl-profile-name">
+          {{ customer.name }}
+        </h2>
+
         <span class="wl-profile-badge">
-          {% if customer.tags contains 'gold' %}Gold Member
-          {% elsif customer.tags contains 'silver' %}Silver Member
-          {% else %}Member{% endif %}
+
+          {% if customer.tags contains 'gold' %}
+            Gold Member
+          {% elsif customer.tags contains 'silver' %}
+            Silver Member
+          {% else %}
+            Member
+          {% endif %}
+
         </span>
+
       </div>
 
-      <!-- Nav -->
+
+      <!-- Navigation -->
+
       <nav class="wl-sidenav">
-        <a href="{{ routes.account_url }}" class="wl-sidenav-link">
-          <span class="material-symbols-outlined">dashboard</span> Dashboard
+
+        <a href="/account" class="wl-sidenav-link active">
+          Dashboard
         </a>
-        <a href="{{ routes.account_url }}" class="wl-sidenav-link">
-          <span class="material-symbols-outlined">package_2</span> My Orders
+
+        <a href="/account#orders" class="wl-sidenav-link">
+          My Orders
         </a>
-        <a href="{{ routes.account_url }}#addresses" class="wl-sidenav-link">
-          <span class="material-symbols-outlined">location_on</span> Address Book
+
+        <a href="/account/addresses" class="wl-sidenav-link">
+          Address Book
         </a>
-        <a href="#" class="wl-sidenav-link active">
-          <span class="material-symbols-outlined">favorite</span> Wishlist
+
+        <a href="/account#wishlist" class="wl-sidenav-link">
+          Wishlist
         </a>
-        <a href="{{ routes.account_url }}#payment" class="wl-sidenav-link">
-          <span class="material-symbols-outlined">credit_card</span> Payment Methods
-        </a>
+
         <hr class="wl-sidenav-divider">
+
         <a href="{{ routes.account_logout_url }}" class="wl-sidenav-link danger">
-          <span class="material-symbols-outlined">logout</span> Sign Out
+          Logout
         </a>
+
       </nav>
 
     </aside>
 
-    <!-- RIGHT: Content -->
+
+
+    <!-- Right Content -->
+
     <div class="wl-content">
 
-      <!-- Header -->
-      <div class="wl-content-header">
-        <div>
-          <nav class="wl-breadcrumb">
-            <a href="{{ routes.account_url }}">Dashboard</a>
-            <span class="material-symbols-outlined">chevron_right</span>
-            <span>Wishlist</span>
-          </nav>
-          <h2 class="wl-page-title">
-            My Wishlist
-            <span class="wl-item-count" id="wl-item-count">0 Items</span>
-          </h2>
-        </div>
-        <button class="wl-add-all-btn" id="wl-add-all-btn" disabled>
-          <span class="material-symbols-outlined">shopping_cart_checkout</span>
-          Add All to Cart
-        </button>
-      </div>
 
-      <!-- Grid -->
-      <div class="wl-grid" id="wl-grid">
+      <!-- Dashboard -->
 
-        <!-- Empty State -->
-        <div class="wl-empty" id="wl-empty">
-          <span class="material-symbols-outlined">favorite_border</span>
-          <p>Your wishlist is empty</p>
-          <a href="{{ routes.collections_url }}" class="wl-shop-link">Start Shopping</a>
-        </div>
+      <h2 id="orders">
+        My Orders
+      </h2>
 
-      </div>
+
+      {% paginate customer.orders by 20 %}
+
+      {% if customer.orders.size > 0 %}
+
+      <table class="responsive-table">
+
+        <thead>
+
+          <tr>
+
+            <th>Order</th>
+
+            <th>Date</th>
+
+            <th>Status</th>
+
+            <th>Total</th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+        {% for order in customer.orders %}
+
+        <tr>
+
+          <td>
+
+            {{ order.name | link_to: order.customer_url }}
+
+          </td>
+
+          <td>
+
+            {{ order.created_at | date: "%d %b %Y" }}
+
+          </td>
+
+          <td>
+
+            {{ order.financial_status_label }}
+
+          </td>
+
+          <td>
+
+            {{ order.total_price | money }}
+
+          </td>
+
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+      </table>
+
+
+      {% else %}
+
+      <p>No orders yet</p>
+
+      {% endif %}
+
+
+      {% endpaginate %}
+
+
+
+      <!-- Address -->
+
+      <h2>
+        Default Address
+      </h2>
+
+
+      {{ customer.default_address | format_address }}
+
+
+      <br>
+
+      <a href="/account/addresses">
+
+        View Addresses
+
+      </a>
+
+
+      
+   
+
+
     </div>
 
+
   </div>
+
 </main>
-
-<script>
-(function() {
-
-  var STORAGE_KEY = 'wl_items';
-  var grid       = document.getElementById('wl-grid');
-  var emptyEl    = document.getElementById('wl-empty');
-  var countEl    = document.getElementById('wl-item-count');
-  var addAllBtn  = document.getElementById('wl-add-all-btn');
-
-  function getItems() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-    catch(e) { return []; }
-  }
-
-  function saveItems(items) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  }
-
-  function removeItem(id) {
-    saveItems(getItems().filter(function(i) { return String(i.id) !== String(id); }));
-    render();
-  }
-
-  function formatMoney(cents) {
-    return '$' + (cents / 100).toFixed(2);
-  }
-
-  function esc(str) {
-    var d = document.createElement('div'); d.textContent = str; return d.innerHTML;
-  }
-
-  function stockBadge(available, lowStock) {
-    if (lowStock) return '<span class="wl-badge low-stock">Low Stock</span>';
-    if (available) return '<span class="wl-badge in-stock">In Stock</span>';
-    return '<span class="wl-badge out-stock">Out of Stock</span>';
-  }
-
-  function render() {
-    var items = getItems();
-
-    // Remove existing cards
-    grid.querySelectorAll('.wl-card').forEach(function(c) { c.remove(); });
-
-    if (items.length === 0) {
-      emptyEl.style.display = 'flex';
-      countEl.textContent   = '0 Items';
-      addAllBtn.disabled    = true;
-      return;
-    }
-
-    emptyEl.style.display = 'none';
-    countEl.textContent   = items.length + ' Item' + (items.length !== 1 ? 's' : '');
-    addAllBtn.disabled    = false;
-
-    items.forEach(function(item) {
-      var imgHtml = item.image
-        ? '<img src="' + esc(item.image) + '" alt="' + esc(item.title) + '" class="wl-card-img" loading="lazy">'
-        : '<div class="wl-card-no-img"><span class="material-symbols-outlined">image_not_supported</span></div>';
-
-      var card = document.createElement('div');
-      card.className = 'wl-card';
-      card.innerHTML =
-        '<div class="wl-card-image-wrap">'
-          + '<a href="' + esc(item.url || '#') + '">' + imgHtml + '</a>'
-          + '<button class="wl-remove-btn" data-id="' + esc(String(item.id)) + '" aria-label="Remove from wishlist">'
-            + '<span class="material-symbols-outlined">close</span>'
-          + '</button>'
-        + '</div>'
-        + '<div class="wl-card-body">'
-          + '<div class="wl-card-top">'
-            + '<h3 class="wl-card-title"><a href="' + esc(item.url || '#') + '">' + esc(item.title) + '</a></h3>'
-            + stockBadge(item.available, item.low_stock)
-          + '</div>'
-          + '<p class="wl-card-price">' + formatMoney(item.price || 0) + '</p>'
-          + '<button class="wl-atc-btn" data-id="' + esc(String(item.id)) + '"'
-            + (!item.available ? ' disabled' : '') + '>'
-            + (item.available ? 'Add to Cart' : 'Out of Stock')
-          + '</button>'
-        + '</div>';
-
-      grid.insertBefore(card, emptyEl);
-    });
-
-    bindCardEvents();
-  }
-
-  function addToCart(variantId, btn) {
-    btn.disabled     = true;
-    btn.textContent  = 'Adding...';
-
-    fetch('/cart/add.js', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: variantId, quantity: 1 })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function() {
-      if (window.CartDrawer) { window.CartDrawer.refresh(); window.CartDrawer.open(); }
-      btn.textContent = 'Added!';
-      setTimeout(function() { btn.disabled = false; btn.textContent = 'Add to Cart'; }, 1800);
-    })
-    .catch(function() { btn.disabled = false; btn.textContent = 'Add to Cart'; });
-  }
-
-  function bindCardEvents() {
-    document.querySelectorAll('.wl-remove-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() { removeItem(this.dataset.id); });
-    });
-    document.querySelectorAll('.wl-atc-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() { addToCart(this.dataset.id, this); });
-    });
-  }
-
-  // Add All to Cart
-  addAllBtn.addEventListener('click', function() {
-    var items = getItems().filter(function(i) { return i.available; });
-    if (!items.length) return;
-
-    addAllBtn.disabled   = true;
-    addAllBtn.innerHTML  = '<span class="material-symbols-outlined">hourglass_top</span> Adding...';
-
-    Promise.all(items.map(function(item) {
-      return fetch('/cart/add.js', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: item.id, quantity: 1 })
-      });
-    })).then(function() {
-      if (window.CartDrawer) { window.CartDrawer.refresh(); window.CartDrawer.open(); }
-      addAllBtn.innerHTML = '<span class="material-symbols-outlined">check</span> All Added!';
-      setTimeout(function() {
-        addAllBtn.disabled  = false;
-        addAllBtn.innerHTML = '<span class="material-symbols-outlined">shopping_cart_checkout</span> Add All to Cart';
-      }, 2000);
-    });
-  });
-
-  // Public API — product pages এ wishlist button থেকে call করো:
-  // window.Wishlist.add({ id, title, price, image, url, available })
-  // window.Wishlist.toggle(item)
-  // window.Wishlist.has(id) → true/false
-  window.Wishlist = {
-    add: function(item) {
-      var items = getItems();
-      if (!items.find(function(i) { return String(i.id) === String(item.id); })) {
-        items.push(item);
-        saveItems(items);
-        render();
-      }
-    },
-    remove: removeItem,
-    toggle: function(item) {
-      if (this.has(item.id)) { this.remove(item.id); return false; }
-      else { this.add(item); return true; }
-    },
-    has: function(id) {
-      return !!getItems().find(function(i) { return String(i.id) === String(id); });
-    },
-    count: function() { return getItems().length; }
-  };
-
-  render();
-
-})();
-</script>
-
-{% schema %}
-{
-  "name": "Wishlist",
-  "settings": [],
-  "presets": [{ "name": "Wishlist" }]
-}
-{% endschema %}

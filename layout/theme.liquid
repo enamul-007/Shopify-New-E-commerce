@@ -41,6 +41,11 @@ h1,h2,h3,h4,h5,h6{
 <link rel="stylesheet" href="{{ 'contact.css' | asset_url }}">
 <link rel="stylesheet" href="{{ 'wishlist.css' | asset_url }}">
 <link rel="stylesheet" href="{{ 'hero-slider.css' | asset_url }}">
+<link rel="stylesheet" href="{{ 'order-history.css' | asset_url }}">
+<link rel="stylesheet" href="{{ 'login.css' | asset_url }}">
+<link rel="stylesheet" href="{{ 'register.css' | asset_url }}">
+<link rel="stylesheet" href="{{ 'account.css' | asset_url }}">
+<link rel="stylesheet" href="{{ '404-page.css' | asset_url }}">
 
 {{ content_for_header }}
 
@@ -48,6 +53,17 @@ h1,h2,h3,h4,h5,h6{
 
 
 <body>
+
+{% comment %} Global Wishlist API — সব page এ available {% endcomment %}
+{% render 'wishlist-js' %}
+
+{% comment %} Redirect /account/login and /account/register to custom pages {% endcomment %}
+{% if request.path == '/account/login' or request.path == '/account/login/' %}
+  <script>window.location.replace('/pages/login');</script>
+{% endif %}
+{% if request.path == '/account/register' or request.path == '/account/register/' %}
+  <script>window.location.replace('/pages/register');</script>
+{% endif %}
 
 {% section 'header' %}
 

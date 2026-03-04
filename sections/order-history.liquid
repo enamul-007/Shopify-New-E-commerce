@@ -1,0 +1,244 @@
+{% comment %}
+  Section: sections/order-history.liquid
+{% endcomment %}
+{{ 'order-history.css' | asset_url | stylesheet_tag }}
+
+<main class="oh-main">
+  <div class="oh-layout">
+
+    <!-- LEFT: Sidebar -->
+    <aside class="oh-sidebar">
+
+      <!-- Profile Card -->
+      <div class="oh-profile-card">
+        <div class="oh-avatar-wrap">
+          {% if customer.metafields.custom.avatar %}
+            <img src="{{ customer.metafields.custom.avatar }}" alt="{{ customer.name }}" class="oh-avatar-img">
+          {% else %}
+            <div class="oh-avatar-placeholder">
+              <span class="material-symbols-outlined">person</span>
+            </div>
+          {% endif %}
+        </div>
+        <h2 class="oh-profile-name">{{ customer.name | default: 'Guest' }}</h2>
+        <span class="oh-profile-badge">
+          {% if customer.tags contains 'gold' %}Gold Member
+          {% elsif customer.tags contains 'silver' %}Silver Member
+          {% else %}Member{% endif %}
+        </span>
+      </div>
+
+      <!-- Sidenav -->
+      <nav class="oh-sidenav">
+        <a href="{{ routes.account_url }}" class="oh-sidenav-link">
+          <span class="material-symbols-outlined">dashboard</span> Dashboard
+        </a>
+        <a href="{{ routes.account_url }}" class="oh-sidenav-link active">
+          <span class="material-symbols-outlined">package_2</span> My Orders
+        </a>
+        <a href="{{ routes.account_url }}#addresses" class="oh-sidenav-link">
+          <span class="material-symbols-outlined">location_on</span> Address Book
+        </a>
+        <a href="{{ routes.account_url }}#wishlist" class="oh-sidenav-link">
+          <span class="material-symbols-outlined">favorite</span> Wishlist
+        </a>
+        <a href="{{ routes.account_url }}#payment" class="oh-sidenav-link">
+          <span class="material-symbols-outlined">credit_card</span> Payment Methods
+        </a>
+        <hr class="oh-sidenav-divider">
+        <a href="{{ routes.account_logout_url }}" class="oh-sidenav-link danger">
+          <span class="material-symbols-outlined">logout</span> Sign Out
+        </a>
+      </nav>
+
+    </aside>
+
+    <!-- RIGHT: Orders -->
+    <div class="oh-content">
+
+      <!-- Breadcrumb + Title -->
+      <nav class="oh-breadcrumb">
+        <a href="{{ routes.account_url }}">Dashboard</a>
+        <span class="material-symbols-outlined">chevron_right</span>
+        <span>My Orders</span>
+      </nav>
+      <h2 class="oh-page-title">My Orders</h2>
+
+      <!-- Filter Tabs -->
+      <div class="oh-tabs-wrap">
+        <nav class="oh-tabs">
+          <a href="?filter=all"      class="oh-tab {% if request.query_string contains 'filter=in-progress' or request.query_string contains 'filter=shipped' or request.query_string contains 'filter=cancelled' %}{% else %}active{% endif %}">All Orders</a>
+          <a href="?filter=in-progress" class="oh-tab {% if request.query_string contains 'filter=in-progress' %}active{% endif %}">In Progress</a>
+          <a href="?filter=shipped"     class="oh-tab {% if request.query_string contains 'filter=shipped' %}active{% endif %}">Shipped</a>
+          <a href="?filter=cancelled"   class="oh-tab {% if request.query_string contains 'filter=cancelled' %}active{% endif %}">Cancelled</a>
+        </nav>
+      </div>
+
+      <!-- Orders List -->
+      <div class="oh-orders-list">
+
+        {% assign filter = request.query_string | split: 'filter=' | last %}
+        {% assign has_orders = false %}
+
+        {% for order in customer.orders %}
+          {% assign show = false %}
+          {% assign status_lower = order.fulfillment_status | downcase %}
+
+          {% if filter == 'shipped' and status_lower == 'fulfilled' %}
+            {% assign show = true %}
+          {% elsif filter == 'in-progress' and status_lower == 'unfulfilled' %}
+            {% assign show = true %}
+          {% elsif filter == 'cancelled' and order.cancelled %}
+            {% assign show = true %}
+          {% elsif filter != 'shipped' and filter != 'in-progress' and filter != 'cancelled' %}
+            {% assign show = true %}
+          {% endif %}
+
+          {% if show %}
+            {% assign has_orders = true %}
+
+            <!-- Order Status Badge -->
+            {% assign badge_class = 'oh-badge default' %}
+            {% assign badge_text  = order.fulfillment_status | capitalize %}
+            {% if order.cancelled %}
+              {% assign badge_class = 'oh-badge cancelled' %}
+              {% assign badge_text  = 'Cancelled' %}
+            {% elsif status_lower == 'fulfilled' %}
+              {% assign badge_class = 'oh-badge shipped' %}
+              {% assign badge_text  = 'Shipped' %}
+            {% elsif status_lower == 'unfulfilled' %}
+              {% assign badge_class = 'oh-badge in-progress' %}
+              {% assign badge_text  = 'In Progress' %}
+            {% endif %}
+
+            <div class="oh-order-card {% if order.cancelled %}oh-order-cancelled{% endif %}">
+
+              <!-- Card Header -->
+              <div class="oh-order-header">
+                <div class="oh-order-meta">
+                  <div>
+                    <p class="oh-meta-label">Order Number</p>
+                    <p class="oh-meta-value">{{ order.name }}</p>
+                  </div>
+                  <div>
+                    <p class="oh-meta-label">Date Placed</p>
+                    <p class="oh-meta-date">{{ order.created_at | date: '%b %d, %Y' }}</p>
+                  </div>
+                </div>
+                <span class="{{ badge_class }}">{{ badge_text }}</span>
+              </div>
+
+              <!-- Products Preview -->
+              <div class="oh-order-products">
+                <div class="oh-product-images">
+                  {% for line_item in order.line_items limit: 3 %}
+                    {% if line_item.image %}
+                      <img
+                        src="{{ line_item.image | img_url: '120x' }}"
+                        alt="{{ line_item.title | escape }}"
+                        class="oh-product-img {% if order.cancelled %}oh-grayscale{% endif %}"
+                        loading="lazy"
+                        width="64" height="64"
+                      >
+                    {% endif %}
+                  {% endfor %}
+                  {% if order.line_items.size > 3 %}
+                    <div class="oh-more-items">+{{ order.line_items.size | minus: 3 }} more</div>
+                  {% endif %}
+                </div>
+
+                {% comment %} Single item — show title + variant {% endcomment %}
+                {% if order.line_items.size == 1 %}
+                  {% assign item = order.line_items.first %}
+                  <div class="oh-single-item-info">
+                    <span class="oh-single-item-title">{{ item.title }}</span>
+                    {% if item.variant.title != 'Default Title' %}
+                      <span class="oh-single-item-variant">{{ item.variant.title }}</span>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Card Footer -->
+              <div class="oh-order-footer">
+                <div class="oh-order-total">
+                  <span class="oh-total-label">Total:</span>
+                  <span class="oh-total-value">{{ order.total_price | money }}</span>
+                </div>
+                <div class="oh-order-actions">
+                  <a href="{{ order.customer_url }}" class="oh-btn secondary">View Details</a>
+
+                  {% unless order.cancelled %}
+                    {% if status_lower == 'fulfilled' %}
+                      {% if order.fulfillments.first.tracking_url != blank %}
+                        <a href="{{ order.fulfillments.first.tracking_url }}" target="_blank" rel="noopener" class="oh-btn secondary">Track Package</a>
+                      {% endif %}
+                    {% elsif status_lower == 'unfulfilled' %}
+                      <a href="{{ order.customer_url }}" class="oh-btn secondary">Modify Order</a>
+                    {% endif %}
+                  {% endunless %}
+
+                  <form action="{{ routes.cart_add_url }}" method="post" class="oh-buy-again-form">
+                    {% for line_item in order.line_items %}
+                      <input type="hidden" name="items[][id]"       value="{{ line_item.variant.id }}">
+                      <input type="hidden" name="items[][quantity]" value="{{ line_item.quantity }}">
+                    {% endfor %}
+                    <button type="submit" class="oh-btn primary">Buy Again</button>
+                  </form>
+                </div>
+              </div>
+
+            </div>
+          {% endif %}
+        {% endfor %}
+
+        {% unless has_orders %}
+          <div class="oh-empty">
+            <span class="material-symbols-outlined">package_2</span>
+            <p>No orders found</p>
+            <a href="{{ routes.collections_url }}" class="oh-btn primary">Start Shopping</a>
+          </div>
+        {% endunless %}
+
+      </div>
+
+      <!-- Pagination -->
+      {% if paginate.pages > 1 %}
+        <div class="oh-pagination">
+          {% if paginate.previous %}
+            <a href="{{ paginate.previous.url }}" class="oh-page-btn">
+              <span class="material-symbols-outlined">chevron_left</span>
+            </a>
+          {% else %}
+            <span class="oh-page-btn disabled">
+              <span class="material-symbols-outlined">chevron_left</span>
+            </span>
+          {% endif %}
+
+          {% for part in paginate.parts %}
+            {% if part.is_link %}
+              <a href="{{ part.url }}" class="oh-page-btn">{{ part.title }}</a>
+            {% elsif part.title == paginate.current_page %}
+              <span class="oh-page-btn active">{{ part.title }}</span>
+            {% else %}
+              <span class="oh-page-ellipsis">...</span>
+            {% endif %}
+          {% endfor %}
+
+          {% if paginate.next %}
+            <a href="{{ paginate.next.url }}" class="oh-page-btn">Next</a>
+          {% endif %}
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</main>
+
+{% schema %}
+{
+  "name": "Order History",
+  "settings": [],
+  "presets": [{ "name": "Order History" }]
+}
+{% endschema %}

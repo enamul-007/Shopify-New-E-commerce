@@ -1,0 +1,130 @@
+{% comment %}
+  Section: sections/404-content.liquid
+  CSS:     assets/404-page.css
+  Called by: templates/404.json
+{% endcomment %}
+
+{{ '404-page.css' | asset_url | stylesheet_tag }}
+
+<div class="e404-page">
+  <main class="e404-main">
+    <div class="e404-content">
+
+      <!-- Big number -->
+      <div class="e404-number-wrap">
+        <h1 class="e404-number">404</h1>
+        <div class="e404-number-glow"></div>
+      </div>
+
+      <!-- Illustration -->
+      <div class="e404-illustration">
+        <div class="e404-circle">
+          <span class="material-symbols-outlined e404-icon-bg">explore</span>
+          <div class="e404-badge">
+            <span class="material-symbols-outlined e404-icon-badge">production_quantity_limits</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message -->
+      <div class="e404-message">
+        <h2 class="e404-heading">{{ section.settings.heading | default: "Oops! The page you are looking for doesn't exist." }}</h2>
+        <p class="e404-subtext">{{ section.settings.subtext | default: "It looks like you took a wrong turn, but don't worry — we can help you find your way back to your favorite deals." }}</p>
+      </div>
+
+      <!-- Buttons -->
+      <div class="e404-actions">
+        <a href="{{ routes.root_url }}" class="e404-btn e404-btn--primary">
+          <span class="material-symbols-outlined">home</span>
+          {{ section.settings.btn_home | default: 'Back to Home' }}
+        </a>
+        <a href="{{ routes.collections_url }}" class="e404-btn e404-btn--secondary">
+          <span class="material-symbols-outlined">shopping_bag</span>
+          {{ section.settings.btn_shop | default: 'Browse Shop' }}
+        </a>
+      </div>
+
+      <!-- Helper links -->
+      <div class="e404-links">
+        <a href="{{ routes.search_url }}" class="e404-link">
+          <span class="material-symbols-outlined">search</span>
+          Search our Shop
+        </a>
+        {% if section.settings.support_url != blank %}
+          <a href="{{ section.settings.support_url }}" class="e404-link">
+            <span class="material-symbols-outlined">contact_support</span>
+            Contact Support
+          </a>
+        {% endif %}
+        {% if section.settings.faq_url != blank %}
+          <a href="{{ section.settings.faq_url }}" class="e404-link">
+            <span class="material-symbols-outlined">help</span>
+            View FAQ
+          </a>
+        {% endif %}
+      </div>
+
+    </div>
+  </main>
+</div>
+
+{% schema %}
+{
+  "name": "404 Page",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Message"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Oops! The page you are looking for doesn't exist."
+    },
+    {
+      "type": "textarea",
+      "id": "subtext",
+      "label": "Subtext",
+      "default": "It looks like you took a wrong turn, but don't worry — we can help you find your way back to your favorite deals."
+    },
+    {
+      "type": "header",
+      "content": "Buttons"
+    },
+    {
+      "type": "text",
+      "id": "btn_home",
+      "label": "Home Button Text",
+      "default": "Back to Home"
+    },
+    {
+      "type": "text",
+      "id": "btn_shop",
+      "label": "Shop Button Text",
+      "default": "Browse Shop"
+    },
+    {
+      "type": "header",
+      "content": "Helper Links"
+    },
+    {
+      "type": "url",
+      "id": "support_url",
+      "label": "Contact Support URL",
+      "info": "Leave blank to hide."
+    },
+    {
+      "type": "url",
+      "id": "faq_url",
+      "label": "FAQ Page URL",
+      "info": "Leave blank to hide."
+    }
+  ],
+  "presets": [
+    {
+      "name": "404 Page"
+    }
+  ]
+}
+{% endschema %}

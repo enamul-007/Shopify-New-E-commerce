@@ -1,0 +1,213 @@
+{% comment %}
+  Section: sections/dashboard.liquid
+{% endcomment %}
+{{ 'dashboard.css' | asset_url | stylesheet_tag }}
+
+<main class="db-main">
+  <div class="db-layout">
+
+    <!-- LEFT: Sidebar -->
+    <aside class="db-sidebar">
+
+      <!-- Profile Card -->
+      <div class="db-profile-card">
+        <div class="db-avatar-wrap">
+          {% if customer.metafields.custom.avatar %}
+            <img src="{{ customer.metafields.custom.avatar }}" alt="{{ customer.name }}" class="db-avatar-img">
+          {% else %}
+            <div class="db-avatar-placeholder">
+              <span class="material-symbols-outlined">person</span>
+            </div>
+          {% endif %}
+        </div>
+        <h2 class="db-profile-name">{{ customer.name | default: 'Guest' }}</h2>
+        <span class="db-profile-badge">
+          {% if customer.tags contains 'gold' %}Gold Member
+          {% elsif customer.tags contains 'silver' %}Silver Member
+          {% else %}Member{% endif %}
+        </span>
+      </div>
+
+      <!-- Sidenav -->
+      <nav class="db-sidenav">
+        <a href="{{ routes.account_url }}" class="db-sidenav-link active">
+          <span class="material-symbols-outlined">dashboard</span> Dashboard
+        </a>
+        <a href="{{ routes.account_url }}/orders" class="db-sidenav-link">
+          <span class="material-symbols-outlined">package_2</span> My Orders
+        </a>
+        <a href="{{ routes.account_url }}#addresses" class="db-sidenav-link">
+          <span class="material-symbols-outlined">location_on</span> Address Book
+        </a>
+        <a href="{{ routes.account_url }}#wishlist" class="db-sidenav-link">
+          <span class="material-symbols-outlined">favorite</span> Wishlist
+        </a>
+        <a href="{{ routes.account_url }}#payment" class="db-sidenav-link">
+          <span class="material-symbols-outlined">credit_card</span> Payment Methods
+        </a>
+        <hr class="db-sidenav-divider">
+        <a href="{{ routes.account_logout_url }}" class="db-sidenav-link danger">
+          <span class="material-symbols-outlined">logout</span> Sign Out
+        </a>
+      </nav>
+
+    </aside>
+
+    <!-- RIGHT: Content -->
+    <div class="db-content">
+
+      <!-- Welcome -->
+      <div class="db-welcome">
+        <h2 class="db-welcome-title">Welcome back, {{ customer.first_name | default: 'there' }}!</h2>
+        <p class="db-welcome-sub">Here's what's happening with your account today.</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="db-stats">
+        <div class="db-stat-card">
+          <div class="db-stat-top">
+            <span class="db-stat-label">Recent Orders</span>
+            <span class="material-symbols-outlined db-stat-icon primary">shopping_bag</span>
+          </div>
+          <div class="db-stat-value">{{ customer.orders_count }}</div>
+        </div>
+        <div class="db-stat-card">
+          <div class="db-stat-top">
+            <span class="db-stat-label">Total Spent</span>
+            <span class="material-symbols-outlined db-stat-icon green">payments</span>
+          </div>
+          <div class="db-stat-value">{{ customer.total_spent | money }}</div>
+        </div>
+        <div class="db-stat-card">
+          <div class="db-stat-top">
+            <span class="db-stat-label">Loyalty Points</span>
+            <span class="material-symbols-outlined db-stat-icon amber">stars</span>
+          </div>
+          <div class="db-stat-value">{{ customer.metafields.loyalty.points | default: '0' }}</div>
+        </div>
+      </div>
+
+      <!-- Recent Orders Table -->
+      <section class="db-orders-section">
+        <div class="db-section-header">
+          <h3 class="db-section-title">Recent Orders</h3>
+          <a href="{{ routes.account_url }}" class="db-view-all">View All</a>
+        </div>
+        <div class="db-table-wrap">
+          <table class="db-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for order in customer.orders limit: 5 %}
+                {% assign status_lower = order.fulfillment_status | downcase %}
+                {% if order.cancelled %}
+                  {% assign badge_class = 'db-badge cancelled' %}
+                  {% assign badge_text  = 'Cancelled' %}
+                {% elsif status_lower == 'fulfilled' %}
+                  {% assign badge_class = 'db-badge shipped' %}
+                  {% assign badge_text  = 'Shipped' %}
+                {% elsif status_lower == 'partial' %}
+                  {% assign badge_class = 'db-badge partial' %}
+                  {% assign badge_text  = 'Partial' %}
+                {% else %}
+                  {% assign badge_class = 'db-badge processing' %}
+                  {% assign badge_text  = 'Processing' %}
+                {% endif %}
+                <tr>
+                  <td class="db-order-id">{{ order.name }}</td>
+                  <td class="db-order-date">{{ order.created_at | date: '%b %d, %Y' }}</td>
+                  <td><span class="{{ badge_class }}">{{ badge_text }}</span></td>
+                  <td class="db-order-total">{{ order.total_price | money }}</td>
+                  <td><a href="{{ order.customer_url }}" class="db-order-link">View Details</a></td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="5" class="db-no-orders">No orders yet</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Bottom Grid -->
+      <div class="db-bottom-grid">
+
+        <!-- Shipping Address -->
+        <section class="db-card">
+          <div class="db-section-header">
+            <h3 class="db-section-title">Shipping Address</h3>
+            <a href="{{ routes.account_url }}#addresses" class="db-edit-btn">
+              <span class="material-symbols-outlined">edit</span> Edit
+            </a>
+          </div>
+          {% assign default_address = customer.default_address %}
+          {% if default_address %}
+            <div class="db-address-row">
+              <div class="db-address-icon-wrap">
+                <span class="material-symbols-outlined">home</span>
+              </div>
+              <div>
+                <p class="db-address-label">Primary Home</p>
+                <p class="db-address-text">
+                  {{ default_address.address1 }}{% if default_address.address2 %}, {{ default_address.address2 }}{% endif %}<br>
+                  {{ default_address.city }}, {{ default_address.province_code }} {{ default_address.zip }}<br>
+                  {{ default_address.country }}
+                </p>
+              </div>
+            </div>
+          {% else %}
+            <div class="db-address-empty">
+              <span class="material-symbols-outlined">add_location_alt</span>
+              <p>No address saved yet.</p>
+              <a href="{{ routes.account_url }}#addresses" class="db-add-address-link">Add Address</a>
+            </div>
+          {% endif %}
+        </section>
+
+        <!-- Quick Settings -->
+        <section class="db-card">
+          <h3 class="db-section-title" style="margin-bottom:1.5rem;">Quick Settings</h3>
+          <div class="db-settings-list">
+            <div class="db-setting-row">
+              <div class="db-setting-label">
+                <span class="material-symbols-outlined">mail</span>
+                <span>Email Notifications</span>
+              </div>
+              <label class="db-toggle">
+                <input type="checkbox" class="db-toggle-input" id="toggle-email" checked>
+                <span class="db-toggle-track"></span>
+              </label>
+            </div>
+            <div class="db-setting-row">
+              <div class="db-setting-label">
+                <span class="material-symbols-outlined">security</span>
+                <span>2FA Security</span>
+              </div>
+              <label class="db-toggle">
+                <input type="checkbox" class="db-toggle-input" id="toggle-2fa">
+                <span class="db-toggle-track"></span>
+              </label>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+{% schema %}
+{
+  "name": "Dashboard",
+  "settings": [],
+  "presets": [{ "name": "Dashboard" }]
+}
+{% endschema %}
