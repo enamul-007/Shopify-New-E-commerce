@@ -1,0 +1,66 @@
+{% if block.settings.button_label != blank %}
+  <div class="hero-buttons" {{ block.shopify_attributes }}>
+    <a
+      href="{{ block.settings.button_link | default: '#' }}"
+      class="btn {% if block.settings.button_style == 'primary' %}btn-primary{% else %}btn-outline{% endif %}"
+    >
+      {{ block.settings.button_label }}
+      {% if block.settings.show_icon %}
+        <span class="material-symbols-outlined btn-icon" aria-hidden="true">
+          arrow_forward
+        </span>
+      {% endif %}
+    </a>
+  </div>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Button",
+  "settings": [
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button Text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button Link"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button Style",
+      "options": [
+        { "value": "primary", "label": "Primary (Gold)" },
+        { "value": "outline", "label": "Outline (White)" }
+      ],
+      "default": "primary"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_icon",
+      "label": "Show Arrow Icon",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top",
+      "min": 0, "max": 100, "step": 1, "unit": "px", "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom",
+      "min": 0, "max": 100, "step": 1, "unit": "px", "default": 0
+    }
+  ]
+}
+{% endschema %}

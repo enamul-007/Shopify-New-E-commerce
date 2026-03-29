@@ -1,218 +1,470 @@
-{%- assign product = all_products[section.settings.product] -%}
-{%- assign current_variant = product.selected_or_first_available_variant -%}
-{%- assign featured_image = current_variant.featured_image | default: product.featured_image -%}
+{{ 'featured-products.css' | asset_url | stylesheet_tag }}
 
-{% if product == empty %}
-  {%- assign section_onboarding = true -%}
-  {%- assign onboarding_title = 'homepage.onboarding.product_title' | t -%}
-{% endif %}
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+/>
 
-<div data-section-id="{{ section.id }}" data-section-type="product">
+<div
+  class="featured-products-section"
+  style="
+    padding-top: {{ section.settings.padding_top }}px;
+    padding-bottom: {{ section.settings.padding_bottom }}px;
+    background-color: {{ section.settings.bg_color }};
+    --fp-columns-desktop: {{ section.settings.columns_desktop }};
+    --fp-columns-mobile: {{ section.settings.columns_mobile }};
+  "
+>
+  <div class="fp-wrapper">
 
-
-
-  {% for image in product.images %}
-    {% capture wrapper_class %}
-      {%- unless featured_image == image -%}
-        hide
-      {%- endunless -%}
-    {% endcapture %}
-
-    {% render 'responsive-image',
-      image: image,
-      max_width: 700,
-      max_height: 800,
-      image_attributes: "data-product-featured-image",
-      wrapper_class: wrapper_class,
-      wrapper_attributes: "data-product-image-wrapper"
-    %}
-  {% endfor %}
-
-  {% if product.images.size > 1 %}
-    <ul>
-      {% for image in product.images %}
-        <li>
-          <a href="{{ image.src | img_url: '480x480' }}" data-thumbnail-id="{{ image.id }}" data-product-single-thumbnail>
-            <img class="product-single__thumbnail-image" src="{{ image.src | img_url: '160x160' }}" alt="{{ image.alt | escape }}">
-          </a>
-        </li>
-      {% endfor %}
-    </ul>
-  {% endif %}
-
-  <h1>{{ product.title | default: onboarding_title }}</h1>
-  {% if product.vendor != blank %}
-    <p>{{ product.vendor }}</p>
-  {% endif %}
-
-  <div>
-
-    <form action="/cart/add" method="post" enctype="multipart/form-data">
-      {% unless product.has_only_default_variant %}
-        {% for option in product.options_with_values %}
-          <div class="selector-wrapper js">
-            <label for="SingleOptionSelector-{{ section.id }}-{{ forloop.index0 }}">
-              {{ option.name }}
-            </label>
-
-            <select
-              id="SingleOptionSelector-{{ section.id }}-{{ forloop.index0 }}"
-              data-single-option-selector
-              data-index="option{{ option.position }}">
-              {% for value in option.values %}
-                <option
-                  value="{{ value | escape }}"
-                  {% if option.selected_value == value %}selected="selected"{% endif %}>
-                    {{ value }}
-                </option>
-              {% endfor %}
-            </select>
-          </div>
-        {% endfor %}
-      {% endunless %}
-
-      <select name="id" class="no-js" data-product-select>
-        {% for variant in product.variants %}
-          <option
-            {% if variant == product.selected_or_first_available_variant %}selected="selected"{% endif %}
-            {% unless variant.available %}disabled="disabled"{% endunless %}
-            value="{{ variant.id }}">
-              {{ variant.title }}
-          </option>
-        {% endfor %}
-      </select>
-
-      <label for="Quantity-{{ section.id }}">{{ 'products.product.quantity' | t }}</label>
-      <input type="number" id="Quantity-{{ section.id }}" name="quantity" value="1" min="1">
-
-      <div data-price-wrapper>
-        <span data-product-price>
-          {{ current_variant.price | default: '1999' | money }}
-        </span>
-
-        {% if product.compare_at_price_max > product.price %}
-          <span class="visually-hidden" data-compare-text>{{ 'products.product.regular_price' | t }}</span>
-          <s data-compare-price>
-            {% if current_variant.compare_at_price > current_variant.price %}
-              {{ current_variant.compare_at_price | money }}
-            {% endif %}
-          </s>
-        {% endif %}
+    {% comment %} ── Header ── {% endcomment %}
+    <div class="fp-header" style="border-color: {{ section.settings.border_color }};">
+      <div>
+        {%- if section.settings.title != blank -%}
+          <h2 class="fp-header__title" style="color: {{ section.settings.title_color }};">
+            {{ section.settings.title }}
+          </h2>
+        {%- endif -%}
+        {%- if section.settings.subtitle != blank -%}
+          <p class="fp-header__subtitle" style="color: {{ section.settings.subtitle_color }};">
+            {{ section.settings.subtitle }}
+          </p>
+        {%- endif -%}
       </div>
+      {%- if section.settings.view_all_label != blank and section.settings.view_all_url != blank -%}
+        
+          href="{{ section.settings.view_all_url }}"
+          class="fp-header__link"
+          style="color: {{ section.settings.link_color }};"
+        >
+          {{ section.settings.view_all_label }}
+          <span class="material-symbols-outlined fp-icon" aria-hidden="true">arrow_forward</span>
+        </a>
+      {%- endif -%}
+    </div>
 
-      <button
-        type="submit"
-        name="add"
-        data-add-to-cart
-        {% unless product.available %}disabled="disabled"{% endunless %}
-        {% if section_onboarding %}disabled="disabled"{% endif %}>
-          <span data-add-to-cart-text>
-            {% if product.available %}
-              {{ 'products.product.add_to_cart' | t }}
-            {% else %}
-              {{ 'products.product.sold_out' | t }}
-            {% endif %}
-          </span>
-      </button>
-    </form>
+    {% comment %} ── Product Grid ── {% endcomment %}
+    <div class="fp-grid">
+      {% for block in section.blocks %}
+        {% if block.type == 'product_card' %}
+          {%- assign product = block.settings.product -%}
+
+          <div class="fp-card" {{ block.shopify_attributes }}>
+
+            {% comment %} ── Media ── {% endcomment %}
+            <div
+              class="fp-card__media"
+              style="background-color: {{ section.settings.card_bg_color }};"
+            >
+              {%- if block.settings.badge_text != blank -%}
+                <span
+                  class="fp-card__badge"
+                  style="background-color: {{ section.settings.badge_bg }}; color: {{ section.settings.badge_color }};"
+                >
+                  {{ block.settings.badge_text }}
+                </span>
+              {%- endif -%}
+
+              {%- if product != blank -%}
+                <img
+                  src="{{ product.featured_image | img_url: 'master' }}"
+                  alt="{{ product.featured_image.alt | escape }}"
+                  class="fp-card__img"
+                  loading="lazy"
+                >
+              {%- elsif block.settings.custom_image != blank -%}
+                <img
+                  src="{{ block.settings.custom_image | img_url: 'master' }}"
+                  alt="{{ block.settings.custom_image.alt | escape }}"
+                  class="fp-card__img"
+                  loading="lazy"
+                >
+              {%- else -%}
+                {{ 'product-1' | placeholder_svg_tag: 'fp-card__img' }}
+              {%- endif -%}
+
+              {%- if product != blank -%}
+                <button
+                  type="button"
+                  class="fp-card__cart-btn"
+                  onclick="
+                    fetch('/cart/add.js', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ id: {{ product.variants.first.id }}, quantity: 1 })
+                    }).then(() => { window.location.href = '/cart'; })
+                  "
+                >
+                  <span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span>
+                  {{ section.settings.cart_btn_label | default: 'Add to Cart' }}
+                </button>
+              {%- else -%}
+                <button type="button" class="fp-card__cart-btn">
+                  <span class="material-symbols-outlined" aria-hidden="true">shopping_bag</span>
+                  {{ section.settings.cart_btn_label | default: 'Add to Cart' }}
+                </button>
+              {%- endif -%}
+            </div>
+
+            {% comment %} ── Card Body ── {% endcomment %}
+            <div class="fp-card__body">
+
+              {% comment %} Title {% endcomment %}
+              {%- if block.settings.show_title -%}
+                <h3
+                  class="fp-card__name"
+                  style="color: {{ section.settings.title_color }}; font-size: {{ block.settings.title_size }};"
+                >
+                  {%- if product != blank -%}
+                    <a href="{{ product.url }}">{{ product.title }}</a>
+                  {%- elsif block.settings.custom_title != blank -%}
+                    <a href="{{ block.settings.custom_url | default: '#' }}">{{ block.settings.custom_title }}</a>
+                  {%- else -%}
+                    <a href="#">Product Name</a>
+                  {%- endif -%}
+                </h3>
+              {%- endif -%}
+
+              {% comment %} Description {% endcomment %}
+              {%- if block.settings.show_description -%}
+                {%- if product != blank and product.description != blank -%}
+                  <p
+                    class="fp-card__description"
+                    style="
+                      color: {{ section.settings.subtitle_color }};
+                      font-size: {{ block.settings.description_size }};
+                      display: -webkit-box;
+                      -webkit-line-clamp: {{ block.settings.description_lines }};
+                      -webkit-box-orient: vertical;
+                      overflow: hidden;
+                    "
+                  >
+                    {{ product.description | strip_html | truncatewords: 20 }}
+                  </p>
+                {%- endif -%}
+              {%- endif -%}
+
+              {% comment %} Price {% endcomment %}
+              {%- if block.settings.show_price -%}
+                <div class="fp-card__price">
+                  {%- if product != blank -%}
+                    <span class="fp-card__price-current" style="color: {{ section.settings.title_color }};">
+                      {{ product.price | money }}
+                    </span>
+                    {%- if product.compare_at_price > product.price -%}
+                      <span class="fp-card__price-compare">
+                        {{ product.compare_at_price | money }}
+                      </span>
+                    {%- endif -%}
+                  {%- else -%}
+                    <span class="fp-card__price-current" style="color: {{ section.settings.title_color }};">
+                      {{ block.settings.custom_price | default: '$0.00' }}
+                    </span>
+                    {%- if block.settings.compare_price != blank -%}
+                      <span class="fp-card__price-compare">{{ block.settings.compare_price }}</span>
+                    {%- endif -%}
+                  {%- endif -%}
+                </div>
+              {%- endif -%}
+
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
 
   </div>
-
-  <div class="rte">
-    {{ product.description }}
-  </div>
-
-  {% if section.settings.show_share_buttons %}
-    {% render 'social-sharing', share_title: product.title, share_permalink: product.url, share_image: product %}
-  {% endif %}
-
-  {% unless product == empty %}
-    <script type="application/json" data-product-json>
-      {{ product | json }}
-    </script>
-  {% endunless %}
 </div>
 
 {% schema %}
-  {
-    "name": "Featured product",
-    "settings": [
-      {
-        "type": "product",
-        "id": "product",
-        "label": "Product"
-      },
-      {
-        "type": "checkbox",
-        "id": "show_share_buttons",
-        "label": "Show social sharing buttons"
-      }
-    ],
-    "presets": [
-      {
-        "name": "Featured product",
-        "category": "Product"
-      }
-    ]
-  }
-{% endschema %}
-
-<script type="application/ld+json">
 {
-  "@context": "http://schema.org/",
-  "@type": "Product",
-  "name": "{{ product.title | escape }}",
-  "url": "{{ shop.url }}{{ product.url }}",
-  {% if product.featured_image %}
-    {% assign image_size = product.featured_image.width | append: 'x' %}
-    "image": [
-      "https:{{ product.featured_image.src | img_url: image_size }}"
-    ],
-  {% endif %}
-  "description": "{{ product.description | strip_html | escape }}",
-  {% if current_variant.sku != blank %}
-    "sku": "{{ current_variant.sku }}",
-  {% endif %}
-  "brand": {
-    "@type": "Thing",
-    "name": "{{ product.vendor | escape }}"
-  },
-  {% if product.variants %}
-    "offers": [
-      {% for variant in product.variants %}
+  "name": "Featured Products",
+  "tag": "section",
+  "class": "featured-products-wrapper",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Section Title",
+      "default": "Featured Products"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Our handpicked selection of premium essentials."
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "View All Label",
+      "default": "View All"
+    },
+    {
+      "type": "url",
+      "id": "view_all_url",
+      "label": "View All Link"
+    },
+    {
+      "type": "text",
+      "id": "cart_btn_label",
+      "label": "Add to Cart Button Text",
+      "default": "Add to Cart"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns (Desktop)",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "columns_mobile",
+      "label": "Columns (Mobile)",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Padding Top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Padding Bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Background Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "card_bg_color",
+      "label": "Card Background",
+      "default": "#f1f5f9"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title Color",
+      "default": "#0f172a"
+    },
+    {
+      "type": "color",
+      "id": "subtitle_color",
+      "label": "Subtitle / Description Color",
+      "default": "#64748b"
+    },
+    {
+      "type": "color",
+      "id": "link_color",
+      "label": "Link / Accent Color",
+      "default": "#197fe6"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Header Border Color",
+      "default": "#e2e8f0"
+    },
+    {
+      "type": "color",
+      "id": "badge_bg",
+      "label": "Badge Background",
+      "default": "#dbeafe"
+    },
+    {
+      "type": "color",
+      "id": "badge_color",
+      "label": "Badge Text Color",
+      "default": "#197fe6"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "product_card",
+      "name": "Product Card",
+      "settings": [
         {
-          "@type" : "Offer",
-          "availability" : "http://schema.org/{% if product.available %}InStock{% else %}OutOfStock{% endif %}",
-          "price" : "{{ variant.price | divided_by: 100.00 }}",
-          "priceCurrency" : "{{ shop.currency }}",
-          "url" : "{{ shop.url }}{{ variant.url }}",
-          "itemOffered" :
-          {
-              "@type" : "Product",
-              {% if variant.image %}
-                {% assign variant_image_size = variant.image.width | append: 'x' %}
-                "image": "http:{{ variant.image.src | img_url: variant_image_size }}",
-              {% endif %}
-              {% if variant.title != blank %}
-                "name" : "{{ variant.title | escape }}",
-              {% endif %}
-              {% if variant.sku != blank %}
-                "sku": "{{ variant.sku }}",
-              {% endif %}
-              {% if variant.weight != blank %}
-                "weight": {
-                  "@type": "QuantitativeValue",
-                  {% if variant.weight_unit != blank %}
-                    "unitCode": "{{ variant.weight_unit }}",
-                  {% endif %}
-                  "value": "{{ variant.weight | weight_with_unit: variant.weight_unit }}"
-                },
-              {% endif %}
-              "url": "{{ shop.url }}{{ variant.url }}"
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "header",
+          "content": "Manual Override"
+        },
+        {
+          "type": "image_picker",
+          "id": "custom_image",
+          "label": "Custom Image"
+        },
+        {
+          "type": "text",
+          "id": "custom_title",
+          "label": "Product Name",
+          "default": "Product Name"
+        },
+        {
+          "type": "url",
+          "id": "custom_url",
+          "label": "Product URL"
+        },
+        {
+          "type": "text",
+          "id": "custom_price",
+          "label": "Price",
+          "default": "$99.00"
+        },
+        {
+          "type": "text",
+          "id": "compare_price",
+          "label": "Compare Price (optional)"
+        },
+        {
+          "type": "text",
+          "id": "badge_text",
+          "label": "Badge Text"
+        },
+        {
+          "type": "header",
+          "content": "Show / Hide Elements"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_title",
+          "label": "Show Product Title",
+          "default": true
+        },
+        {
+          "type": "select",
+          "id": "title_size",
+          "label": "Title Size",
+          "options": [
+            { "value": "0.875rem", "label": "Small" },
+            { "value": "1rem", "label": "Medium" },
+            { "value": "1.125rem", "label": "Large" }
+          ],
+          "default": "0.875rem",
+          "visible_if": "{{ block.settings.show_title }}"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_price",
+          "label": "Show Price",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "show_description",
+          "label": "Show Description",
+          "default": false
+        },
+        {
+          "type": "range",
+          "id": "description_lines",
+          "label": "Description Max Lines",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "default": 2,
+          "visible_if": "{{ block.settings.show_description }}"
+        },
+        {
+          "type": "select",
+          "id": "description_size",
+          "label": "Description Size",
+          "options": [
+            { "value": "0.75rem", "label": "Small" },
+            { "value": "0.875rem", "label": "Medium" },
+            { "value": "1rem", "label": "Large" }
+          ],
+          "default": "0.875rem",
+          "visible_if": "{{ block.settings.show_description }}"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Featured Products",
+      "blocks": [
+        {
+          "type": "product_card",
+          "settings": {
+            "badge_text": "New Arrival",
+            "custom_title": "Chronos Series 01",
+            "custom_price": "$249.00",
+            "show_title": true,
+            "show_price": true,
+            "show_description": false
           }
-        }{% unless forloop.last %},{% endunless %}
-      {% endfor %}
-    ]
-  {% endif %}
+        },
+        {
+          "type": "product_card",
+          "settings": {
+            "badge_text": "Limited",
+            "custom_title": "Studio ANC Headset",
+            "custom_price": "$399.00",
+            "show_title": true,
+            "show_price": true,
+            "show_description": false
+          }
+        },
+        {
+          "type": "product_card",
+          "settings": {
+            "custom_title": "Retro-M 35mm",
+            "custom_price": "$1,150.00",
+            "show_title": true,
+            "show_price": true,
+            "show_description": false
+          }
+        },
+        {
+          "type": "product_card",
+          "settings": {
+            "badge_text": "Sale",
+            "custom_title": "UltraBook Pro 14",
+            "custom_price": "$1,899.00",
+            "compare_price": "$2,100.00",
+            "show_title": true,
+            "show_price": true,
+            "show_description": false
+          }
+        }
+      ]
+    }
+  ]
 }
-</script>
+{% endschema %}

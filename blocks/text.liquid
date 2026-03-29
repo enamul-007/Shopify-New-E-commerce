@@ -1,0 +1,141 @@
+{% liquid
+  assign text = block.settings.text
+  if text == blank
+    assign text = '<p>Write your description here.</p>'
+  endif
+%}
+
+{% render 'text', width: '100%', block: block, fallback_text: text %}
+
+{% schema %}
+{
+  "name": "Text",
+  "settings": [
+    {
+      "type": "select",
+      "id": "type_preset",
+      "label": "Preset",
+      "options": [
+        { "value": "rte", "label": "Default" },
+        { "value": "paragraph", "label": "Paragraph" },
+        { "value": "h6", "label": "Small Heading" },
+        { "value": "custom", "label": "Custom" }
+      ],
+      "default": "rte"
+    },
+    {
+      "type": "select",
+      "id": "font_size",
+      "label": "Size",
+      "options": [
+        { "value": "", "label": "Default" },
+        { "value": "0.875rem", "label": "14px" },
+        { "value": "1rem", "label": "16px" },
+        { "value": "1.125rem", "label": "18px" },
+        { "value": "1.25rem", "label": "20px" },
+        { "value": "1.5rem", "label": "24px" }
+      ],
+      "default": "",
+      "visible_if": "{{ block.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "font",
+      "label": "Font",
+      "options": [
+        { "value": "var(--font-body--family)", "label": "Body" },
+        { "value": "var(--font-heading--family)", "label": "Heading" },
+        { "value": "var(--font-accent--family)", "label": "Accent" }
+      ],
+      "default": "var(--font-body--family)",
+      "visible_if": "{{ block.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "line_height",
+      "label": "Line Height",
+      "options": [
+        { "value": "tight", "label": "Tight" },
+        { "value": "normal", "label": "Normal" },
+        { "value": "loose", "label": "Loose" }
+      ],
+      "default": "normal",
+      "visible_if": "{{ block.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "letter_spacing",
+      "label": "Letter Spacing",
+      "options": [
+        { "value": "tight", "label": "Tight" },
+        { "value": "normal", "label": "Normal" },
+        { "value": "loose", "label": "Loose" }
+      ],
+      "default": "normal",
+      "visible_if": "{{ block.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "case",
+      "label": "Case",
+      "options": [
+        { "value": "none", "label": "Default" },
+        { "value": "uppercase", "label": "Uppercase" }
+      ],
+      "default": "none",
+      "visible_if": "{{ block.settings.type_preset == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "color",
+      "label": "Color",
+      "options": [
+        { "value": "var(--color-foreground)", "label": "Text" },
+        { "value": "var(--color-foreground-heading)", "label": "Heading" },
+        { "value": "var(--color-primary)", "label": "Link" }
+      ],
+      "default": "var(--color-foreground)",
+      "visible_if": "{{ block.settings.type_preset != 'rte' }}"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text"
+    },
+    {
+      "type": "text_alignment",
+      "id": "alignment",
+      "label": "Alignment",
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Top",
+      "min": 0, "max": 100, "step": 1, "unit": "px", "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Bottom",
+      "min": 0, "max": 100, "step": 1, "unit": "px", "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-start",
+      "label": "Left",
+      "min": 0, "max": 100, "step": 1, "unit": "px", "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-inline-end",
+      "label": "Right",
+      "min": 0, "max": 100, "step": 1, "unit": "px", "default": 0
+    }
+  ]
+}
+{% endschema %}

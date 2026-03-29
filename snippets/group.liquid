@@ -1,0 +1,108 @@
+{%- doc -%}
+  Renders a group block wrapper.
+
+  @param {string} children - rendered child blocks
+  @param {object} settings - block settings
+  @param {string} shopify_attributes - block.shopify_attributes
+{%- enddoc -%}
+
+{% liquid
+  assign s = settings
+
+  assign h_align = s.horizontal_alignment | default: 'flex-start'
+  assign v_align = s.vertical_alignment | default: 'center'
+
+  if s.content_direction != 'row'
+    assign h_align = s.horizontal_alignment_flex_direction_column | default: 'flex-start'
+    assign v_align = s.vertical_alignment_flex_direction_column | default: 'center'
+  endif
+
+  assign group_width = '100%'
+  if s.width == 'fit-content'
+    assign group_width = 'fit-content'
+  elsif s.width == 'custom'
+    assign group_width = s.custom_width | append: '%'
+  endif
+
+  assign group_width_mobile = '100%'
+  if s.width_mobile == 'fit-content'
+    assign group_width_mobile = 'fit-content'
+  elsif s.width_mobile == 'custom'
+    assign group_width_mobile = s.custom_width_mobile | append: '%'
+  endif
+%}
+
+<div
+  class="group-block group-block--{{ s.content_direction }}{% if s.vertical_on_mobile and s.content_direction == 'row' %} group-block--vertical-mobile{% endif %}"
+  style="
+    --group-direction: {{ s.content_direction }};
+    --group-h-align: {{ h_align }};
+    --group-v-align: {{ v_align }};
+    --group-gap: {{ s.gap | default: 12 }}px;
+    --group-width: {{ group_width }};
+    --group-width-mobile: {{ group_width_mobile }};
+    --group-border: {{ s.border | default: 'none' }};
+    --group-border-width: {{ s.border_width | default: 1 }}px;
+    --group-border-radius: {{ s.border_radius | default: 0 }}px;
+    --padding-block-start: {{ s.padding-block-start | default: 0 }}px;
+    --padding-block-end: {{ s.padding-block-end | default: 0 }}px;
+    --padding-inline-start: {{ s.padding-inline-start | default: 0 }}px;
+    --padding-inline-end: {{ s.padding-inline-end | default: 0 }}px;
+  "
+  {{ shopify_attributes }}
+>
+  {% if s.link != blank %}
+    
+      href="{{ s.link }}"
+      class="group-block__link"
+      {% if s.open_in_new_tab %}target="_blank" rel="noopener"{% endif %}
+    ></a>
+  {% endif %}
+
+  {{ children }}
+</div>
+
+{% stylesheet %}
+  .group-block {
+    position: relative;
+    display: flex;
+    flex-direction: var(--group-direction);
+    justify-content: var(--group-h-align);
+    align-items: var(--group-v-align);
+    gap: var(--group-gap);
+    width: var(--group-width);
+    border-style: var(--group-border);
+    border-width: var(--group-border-width);
+    border-color: currentColor;
+    border-radius: var(--group-border-radius);
+    padding-block-start: var(--padding-block-start, 0px);
+    padding-block-end: var(--padding-block-end, 0px);
+    padding-inline-start: var(--padding-inline-start, 0px);
+    padding-inline-end: var(--padding-inline-end, 0px);
+    box-sizing: border-box;
+  }
+
+  .group-block__link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .group-block__link ~ * {
+    pointer-events: none;
+  }
+
+  .group-block__link ~ :is(a, button) {
+    pointer-events: auto;
+  }
+
+  @media screen and (max-width: 749px) {
+    .group-block {
+      width: var(--group-width-mobile);
+    }
+
+    .group-block--vertical-mobile {
+      flex-direction: column;
+    }
+  }
+{% endstylesheet %}

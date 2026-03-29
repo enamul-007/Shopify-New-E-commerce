@@ -1,0 +1,142 @@
+<div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel" data-bs-interval="{{ section.settings.Enable_Auto_slide }}">
+  {% if section.settings.Enable_carosole_button %}
+  <div class="carousel-indicators">
+    {% for block in section.blocks %}
+      <button
+        type="button"
+        data-bs-target="#carouselExampleCaptions"
+        data-bs-slide-to="{{ forloop.index0 }}"
+        {% if forloop.first  %}
+          class="active"
+          aria-current="true"
+        {% endif %}
+        aria-label="Slide {{ forloop.index }}"
+      ></button>
+    {% endfor %}
+  </div>
+   {% endif %}
+
+  <div class="carousel-inner">
+    {% for block in section.blocks %}
+      <div class="carousel-item {% if forloop.index == 1 %} active {% endif %}" data-bs-interval="{{ section.settings.slide_interval_second |times : 1000 }}">
+        {% if block.settings.sliderImg != null %}
+          <img
+            src="{{ block.settings.sliderImg | img_url:'master' }}"
+            class="d-block w-100"
+            alt="{{ block.settings.sliderImg.alt | escape }}"
+          >
+        {% endif %}
+        <div class="carousel-caption d-none d-md-block">
+          <h5>{{ block.settings.title }}</h5>
+          <div class="slider-richtext">{{ block.settings.richtxt }}</div>
+          {% if block.settings.btn_1 != empty and section.settings.enable_Button_1 %}
+            <div class="action">
+              <a href="{{ block.settings.btn_url }}" class="btn btn-primary"> {{ block.settings.btn_1 }} </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  {% if section.blocks.size > 1 and section.settings.enable_perv_next %}
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Next</span>
+    </button>
+  {% endif %}
+</div>
+
+{% schema %}
+{
+  "name": "slider",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "Enable_Auto_slide",
+      "label": "Enable Auto Slide",
+      "default":true
+    },
+  {
+  "type": "range",
+  "id": "slide_interval_second",
+  "label": "Slide Interval (second)",
+  "default": 5,
+  "min": 3,
+  "max": 5,
+  "step": 1
+},
+  {
+    "type": "checkbox",
+    "id": "enable_perv_next",
+    "label": "Enable Prev Next",
+    "default":true
+  },
+    {
+
+      "type": "checkbox",
+      "id": "Enable_carosole_button",
+      "label": "Enable carosole Button ",
+      "default":true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_Button_1",
+      "label": "Enable Button",
+      "default":true
+    }
+
+  ],
+  "blocks": [
+    {
+      "type": "slider",
+      "name" : "slide",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "sliderImg",
+          "label": "slider img "
+        },
+        {
+          "type": "header",
+          "content": "slider content"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "title" ,
+          "default": "Flash sale"
+        },
+        {
+          "type": "richtext",
+          "id": "richtxt",
+          "label": "details",
+          "default": " <p>Some representative placeholder content for the first slide.</p>"
+
+        },
+        {
+          "type": "text",
+          "id": "btn_1",
+          "label": "button lable",
+          "default": "Shop Now"
+        },
+        {
+          "type": "url",
+          "id": "btn_url",
+          "label": "button link"
+        }
+
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "slide show",
+      "category": "slider"
+    }
+  ]
+}
+{% endschema %}

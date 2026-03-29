@@ -1,0 +1,39 @@
+{% if block.settings.badge_text != blank %}
+  <span
+    class="hero-badge"
+    style="
+      background: {{ block.settings.badge_bg }};
+      color: {{ block.settings.badge_color }};
+      border: 1px solid {{ block.settings.badge_color }}; /* এখানে border: 1px solid যোগ করলাম */
+    "
+    {{ block.shopify_attributes }}
+  >
+    {{ block.settings.badge_text }}
+  </span>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Badge",
+  "settings": [
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "Badge Text",
+      "default": "New Season"
+    },
+    {
+      "type": "color",
+      "id": "badge_bg",
+      "label": "Background Color",
+      "default": "#ffffff26"
+    },
+    {
+      "type": "color",
+      "id": "badge_color",
+      "label": "Text & Border Color",
+      "default": "#ffffff"
+    }
+  ]
+}
+{% endschema %}
